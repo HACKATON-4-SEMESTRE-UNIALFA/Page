@@ -11,8 +11,8 @@
     "server": "npx json-server ./jsonserver/db.json --port 3001 -m ./node_modules/json-server-auth"
   },
   "dependencies": {
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.13.0",
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
     "@fontsource/roboto": "^5.1.0",
     "@lexical/react": "^0.18.0",
     "@lexical/rich-text": "^0.18.0",
@@ -29,6 +29,7 @@
     "axios": "^1.7.4",
     "bootstrap": "^5.3.3",
     "cropperjs": "^1.6.2",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "draft-js": "^0.11.7",
     "json-server": "0.17.4",

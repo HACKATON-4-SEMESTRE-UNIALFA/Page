@@ -3,7 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { verificaTokenExpirado } from "../../../services/token";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+
+
 
 import dayjs from 'dayjs';
 
@@ -29,6 +32,7 @@ import { SnackbarMui } from "../../../components/Snackbar";
 import DropZone from "../../../components/Dropzone";
 import { Loading } from "../../../components/Loading";
 import { IToken } from "../../../interfaces/token";
+import { ptBR } from "@mui/material/locale";
 
 interface IReserva {
     id: number
@@ -74,8 +78,9 @@ export default function GerenciarReservas() {
     const [message, setMessage] = useState('');
     const [severity, setSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('info');
     const [ambientes, setAmbientes] = useState<Map<number, string>>(new Map())
-
-
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [availableTimes, setAvailableTimes] = useState<string[]>([]); 
+    const [selectedTime, setSelectedTime] = useState(null);
 
 
     const handleShowSnackbar = (msg: string, sev: 'success' | 'error' | 'info' | 'warning') => {
@@ -177,6 +182,46 @@ export default function GerenciarReservas() {
             });
     }, [isEdit, id, navigate]);*/
 
+    const fetchAvailableTimes = async (date) => {
+        setLoading(true);
+        setError(null);
+        try {
+          // Simulando uma chamada à API
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Simulando horários disponíveis - substitua pela sua chamada real à API
+          const mockTimes = [
+            '09:00-09:59',
+            '10:00-10:59',
+            '11:00-11:59',
+            '14:00-14:59',
+            '15:00-15:59',
+            '16:00-16:59'
+          ];
+          
+          setAvailableTimes(mockTimes);
+        } catch (err) {
+            console.error('Erro ao buscar horários disponíveis:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+    // Fun o para lidar com a sele o de uma data
+    const handleDateChange = useCallback(
+        (newDate: any) => {
+            setSelectedDate(newDate);
+            setSelectedTime(null); // Reseta o hor rio selecionado
+            if (newDate) {
+                fetchAvailableTimes(newDate.toISOString().split('T')[0]); // Formato YYYY-MM-DD
+            }
+        },
+        [fetchAvailableTimes, setSelectedDate, setSelectedTime]
+    );
+
+    
+
+
 
     return (
         <>
@@ -224,18 +269,24 @@ export default function GerenciarReservas() {
                                 name="data"
                                 control={control}
                                 render={({ field }) => (
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <StaticDatePicker
-                                        {...field}
-                                        displayStaticWrapperAs="desktop" // Mantém o DatePicker estático
-                                        value={dayjs(field.value)}
-                                        onChange={(newValue) => field.onChange(dayjs(newValue).toDate())}
-                                    />
+                                    <LocalizationProvider
+                                        dateAdapter={AdapterDayjs}
+                                        adapterLocale={'pt-br'}
+                                        /*localeText={ptBR?.components?.MuiLocalizationProvider?.defaultProps.localeText}*/
+                                    >
+                                        <StaticDatePicker
+                                            {...field}
+                                            orientation="landscape"
+                                            displayStaticWrapperAs="desktop" // Mantém o DatePicker estático
+                                            value={selectedDate}
+                                            disablePast
+                                            onChange={handleDateChange}
+                                        />
                                     </LocalizationProvider>
                                 )}
                             />
 
-                            
+
                             <Button
                                 type="submit"
                                 variant="contained"
