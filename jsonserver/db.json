@@ -1,0 +1,184 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "nome": "Adenilson",
+      "email": "admin@gmail.com",
+      "password": "$2a$10$Y4/4ws04wYotZQg2RB1bwurp7W6RCq.NLrUEEONlOZEdjLXCVG/LW",
+      "telefone": "44912244678",
+      "cpf": "13354362433",
+      "isAdmin": 1,
+      "isUser": 1
+    },
+    {
+      "id": 2,
+      "nome": "Adenilso2",
+      "email": "admin2@gmail.com",
+      "password": "$2a$10$Y4/4ws04wYotZQg2RB1bwurp7W6RCq.NLrUEEONlOZEdjLXCVG/LW",
+      "telefone": "44912244678",
+      "cpf": "13354362433",
+      "isAdmin": 0,
+      "isUser": 1
+    }
+  ],
+  "ambientes": [
+    {
+      "id": 1,
+      "nome": "Sala de Reuniões 1",
+      "descricao": "Ambiente para reuniões com capacidade para 10 pessoas."
+    },
+    {
+      "id": 2,
+      "nome": "Auditório",
+      "descricao": "Auditório com capacidade para 50 pessoas e espaço para palestras."
+    }
+  ],
+  "horarios_funcionamento": [
+    {
+      "id": 1,
+      "ambiente_id": 1,
+      "horario": "00:00-01:00"
+    },
+    {
+      "id": 2,
+      "ambiente_id": 1,
+      "horario": "01:00-02:00"
+    },
+    {
+      "id": 3,
+      "ambiente_id": 1,
+      "horario": "02:00-03:00"
+    },
+    {
+      "id": 4,
+      "ambiente_id": 1,
+      "horario": "03:00-04:00"
+    },
+    {
+      "id": 5,
+      "ambiente_id": 1,
+      "horario": "04:00-05:00"
+    },
+    {
+      "id": 6,
+      "ambiente_id": 1,
+      "horario": "05:00-06:00"
+    },
+    {
+      "id": 7,
+      "ambiente_id": 1,
+      "horario": "06:00-07:00"
+    },
+    {
+      "id": 8,
+      "ambiente_id": 1,
+      "horario": "07:00-08:00"
+    },
+    {
+      "id": 9,
+      "ambiente_id": 1,
+      "horario": "08:00-09:00"
+    },
+    {
+      "id": 10,
+      "ambiente_id": 1,
+      "horario": "09:00-10:00"
+    },
+    {
+      "id": 11,
+      "ambiente_id": 1,
+      "horario": "10:00-11:00"
+    },
+    {
+      "id": 12,
+      "ambiente_id": 1,
+      "horario": "11:00-12:00"
+    },
+    {
+      "id": 13,
+      "ambiente_id": 1,
+      "horario": "12:00-13:00"
+    },
+    {
+      "id": 14,
+      "ambiente_id": 1,
+      "horario": "13:00-14:00"
+    },
+    {
+      "id": 15,
+      "ambiente_id": 1,
+      "horario": "14:00-15:00"
+    },
+    {
+      "id": 16,
+      "ambiente_id": 1,
+      "horario": "15:00-16:00"
+    },
+    {
+      "id": 17,
+      "ambiente_id": 1,
+      "horario": "16:00-17:00"
+    },
+    {
+      "id": 18,
+      "ambiente_id": 1,
+      "horario": "17:00-18:00"
+    },
+    {
+      "id": 19,
+      "ambiente_id": 1,
+      "horario": "18:00-19:00"
+    },
+    {
+      "id": 20,
+      "ambiente_id": 1,
+      "horario": "19:00-20:00"
+    },
+    {
+      "id": 21,
+      "ambiente_id": 1,
+      "horario": "20:00-21:00"
+    },
+    {
+      "id": 22,
+      "ambiente_id": 1,
+      "horario": "21:00-22:00"
+    },
+    {
+      "id": 23,
+      "ambiente_id": 1,
+      "horario": "22:00-23:00"
+    },
+    {
+      "id": 24,
+      "ambiente_id": 1,
+      "horario": "23:00-00:00"
+    }
+  ],
+  "reservas": [
+    {
+      "id": 1,
+      "ambiente_id": 1,
+      "horario": "09:00-10:00",
+      "data": "2024-11-20",
+      "usuario_id": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 2,
+      "ambiente_id": 1,
+      "horario": "10:00-11:00",
+      "data": "2024-11-20",
+      "usuario_id": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 3,
+      "ambiente_id": 2,
+      "horario": "14:00-15:00",
+      "data": "2024-11-21",
+      "usuario_id": 1,
+      "status": "pendente"
+    }
+  ]
+}
