@@ -152,7 +152,7 @@ export default function Ambientes() {
                             >
                                 Reservar
                             </Button>
-                            {token.user?.isAdmin &&
+                            {token.user?.isAdmin == true &&
                                 <Button
                                     variant="contained"
                                     color="success"
@@ -199,7 +199,7 @@ export default function Ambientes() {
                                             {ambiente.descricao}
                                         </Typography>
                                     </CardContent>
-                                    {token.user?.isAdmin &&
+                                    {token.user?.isAdmin == true &&
                                         <CardActions sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
                                             <Button color="primary" size="large"
                                                 onClick={() => navigate(`/ambientes/${ambiente.id}`)}

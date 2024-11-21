@@ -49,7 +49,7 @@ export default function Usuarios() {
         id: null as number | null
     })
 
-    const token = JSON.parse(localStorage.getItem('casadapaz.token') || '') as IToken
+    const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken
 
     useEffect(() => {
 
@@ -58,7 +58,7 @@ export default function Usuarios() {
         }
 
         setLoading(true)
-        axios.get(import.meta.env.VITE_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.access_token}` } })
+        axios.get(import.meta.env.VITE_URL + '/users', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
                 setdadosUsers(res.data.data)
                 setLoading(false)
@@ -151,7 +151,7 @@ export default function Usuarios() {
     const handleConfirmedDelete = useCallback(() => {
         const id = dialogState.id;
 
-        axios.delete(import.meta.env.VITE_URL + `/usuarios/${id}`, { headers: { Authorization: `Bearer ${token.access_token}` } })
+        axios.delete(import.meta.env.VITE_URL + `/usuarios/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then(() => {
                 handleShowSnackbar("Usuário removido com sucesso", "success");
                 setdadosUsers((prevRows) => prevRows.filter((row) => row.id !== id));
