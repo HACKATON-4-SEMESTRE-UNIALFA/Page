@@ -1,35 +1,35 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Controller, set, SubmitHandler, useForm } from "react-hook-form";
+//import { Controller, set, SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
 
 import {
     Box,
     Button,
     Container,
-    FormControl,
-    MenuItem,
-    Select,
-    TextField,
+    //FormControl,
+    // MenuItem,
+    // Select,
+    // TextField,
     Typography,
-    Paper,
-    IconButton,
-    InputLabel,
+    //Paper,
+    // IconButton,
+    //InputLabel,
     Card,
     CardMedia,
     CardContent,
     Chip,
     CardActions,
-    Badge,
+    //Badge,
 } from "@mui/material";
-import LoadingButton from '@mui/lab/LoadingButton';
+//import LoadingButton from '@mui/lab/LoadingButton';
 import Grid from "@mui/material/Grid2";
-import { styled } from "@mui/material/styles";
-import CropOriginalIcon from '@mui/icons-material/CropOriginal';
-import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
+//import { styled } from "@mui/material/styles";
+//import CropOriginalIcon from '@mui/icons-material/CropOriginal';
+//import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from '@mui/icons-material/Edit'
+//import DeleteIcon from "@mui/icons-material/Delete";
+//import EditIcon from '@mui/icons-material/Edit'
 import { verificaTokenExpirado } from "../../services/token";
 import { SnackbarMui } from "../../components/Snackbar";
 import { Loading } from "../../components/Loading";
@@ -54,10 +54,10 @@ export default function Ambientes() {
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const [dadosAmbientes, setDadosAmbientes] = useState<Array<IAmbientes>>([])
-    const [paginationModel, setPaginationModel] = useState({
-        page: 0,
-        pageSize: 10,
-    })
+    //const [paginationModel, setPaginationModel] = useState({
+    //    page: 0,
+    //    pageSize: 10,
+    //})
     const location = useLocation();
     const [dialogState, setDialogState] = useState({
         open: false,
@@ -75,7 +75,7 @@ export default function Ambientes() {
 
         axios.get(import.meta.env.VITE_URL + '/ambientes', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
-                setDadosAmbientes(res.data)
+                setDadosAmbientes(res.data.ambientes)
                 setLoading(false)
             })
             .catch((err) => {

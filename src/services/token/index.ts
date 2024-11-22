@@ -2,7 +2,7 @@ import { jwtDecode } from "jwt-decode"
 import { IToken } from "../../interfaces/token"
 
 export const verificaTokenExpirado = () => {
-    let lsStorage = localStorage.getItem('auth.token')
+    const lsStorage = localStorage.getItem('auth.token')
 
     let token: IToken | null = null
 
@@ -11,7 +11,7 @@ export const verificaTokenExpirado = () => {
     }
 
     if (token) {
-        let decodedToken = jwtDecode(token.accessToken)
+        const decodedToken = jwtDecode(token.accessToken)
         if (
             !decodedToken.exp
             ||

@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import {
-    Container,
     Paper,
     Grid2 as Grid,
     TextField,
@@ -17,7 +16,7 @@ import './login.styles.css';
 
 type ILogin = {
     email: string;
-    password: string;
+    senha: string;
 };
 
 export default function Login() {
@@ -44,16 +43,19 @@ export default function Login() {
         try {
             const response = await axios.post(`${import.meta.env.VITE_URL}/login`, {
                 email: data.email,
-                password: data.password,
+                senha: data.senha,
             });
 
             localStorage.setItem(
                 'auth.token',
-               JSON.stringify(response.data)
+               JSON.stringify({
+                'accessToken':response.data.accessToken,
+                'usuario': response.data.usuario
+            })
             );
 
             handleShowSnackbar("Login efetuado com sucesso!", 'success');
-            setTimeout(() => { navigate('/dashboard'); }, 1500);
+            setTimeout(() => { navigate('/ambientes'); }, 1500);
         } catch (error) {
             setLoading(false);
             console.error(error);
@@ -112,18 +114,18 @@ export default function Login() {
 
                             <div className="form-field">
                                 <TextField
-                                    {...register('password', {
+                                    {...register('senha', {
                                         required: "Por favor digite sua senha"
                                     })}
-                                    id="password"
+                                    id="senha"
                                     label="Senha"
                                     type="password"
                                     size='small'
                                     fullWidth
                                     required
                                     sx={{ mb: 2 }}
-                                    error={!!errors.password}
-                                    helperText={errors.password?.message || ""}
+                                    error={!!errors.senha}
+                                    helperText={errors.senha?.message || ""}
                                     variant="outlined"
                                 />
                             </div>
