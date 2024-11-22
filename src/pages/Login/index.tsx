@@ -1,12 +1,11 @@
 import { useCallback, useState } from 'react';
 import {
-    Container,
     Paper,
-    Grid2 as Grid,
+    Grid,
     TextField,
     Button,
     Typography,
-    Box
+    Box,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
@@ -25,7 +24,7 @@ export default function Login() {
     const {
         register,
         handleSubmit,
-        formState: { errors }
+        formState: { errors },
     } = useForm<ILogin>();
 
     const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -40,24 +39,28 @@ export default function Login() {
     };
 
     const onSubmit = useCallback(async (data: ILogin) => {
+        console.log("Dados enviados:", data); // Adicione este log
         setLoading(true);
         try {
             const response = await axios.post(`${import.meta.env.VITE_URL}/login`, {
                 email: data.email,
                 password: data.password,
             });
-
             localStorage.setItem(
                 'auth.token',
-               JSON.stringify(response.data)
+                JSON.stringify({
+                    accessToken: response.data.accessToken,
+                    usuario: response.data.usuario,
+                })
             );
-
-            handleShowSnackbar("Login efetuado com sucesso!", 'success');
-            setTimeout(() => { navigate('/dashboard'); }, 1500);
+            handleShowSnackbar('Login efetuado com sucesso!', 'success');
+            setTimeout(() => {
+                navigate('/ambientes');
+            }, 1500);
         } catch (error) {
             setLoading(false);
-            console.error(error);
-            handleShowSnackbar("Login ou senha inválidos !", 'error');
+            console.error("Erro ao efetuar login:", error);
+            handleShowSnackbar('Login ou senha inválidos!', 'error');
         }
     }, [navigate]);
 
@@ -71,77 +74,96 @@ export default function Login() {
                 onClose={() => setSnackbarVisible(false)}
                 position={{
                     vertical: 'top',
-                    horizontal: 'center'
+                    horizontal: 'center',
                 }}
             />
-            <Grid container className="login-container" style={{ padding: 0, margin: 0 }}>
-                <Grid size={{ xs: 9, md: 9 }} className="login-image" />
-
-                <Grid size={{ xs: 3, md: 3 }} className="login-form">
-                    <Paper className="form-wrapper" elevation={0}>
-                        <Box
-                            component="form"
-                            onSubmit={handleSubmit(onSubmit)}
-                            noValidate
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100vh',
+                    backgroundImage: 'url("/imagem_fundo.jpg")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            >
+                <Paper
+                    elevation={3}
+                    sx={{
+                        padding: 4,
+                        borderRadius: 4,
+                        maxWidth: 400,
+                        width: '100%',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    }}
+                >
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit(onSubmit)}
+                        noValidate
+                    >
+                        <Typography
+                            variant="h4"
+                            component="h1"
+                            sx={{ mb: 2, textAlign: 'center' }}
                         >
-                            <Typography variant="h4" component="h1" className="form-title" sx={{ mb: 2, textAlign: 'center' }}>
-                                Login
-                            </Typography>
+                            Login
+                        </Typography>
 
-                            <div className="form-field">
-                                <TextField
-                                    {...register('email', {
-                                        required: "Por favor digite seu email",
-                                        pattern: {
-                                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                            message: "Email inválido"
-                                        }
-                                    })}
-                                    id="email"
-                                    label="Email"
-                                    type="email"
-                                    size='small'
-                                    fullWidth
-                                    required
-                                    sx={{ mb: 2 }}
-                                    error={!!errors.email}
-                                    helperText={errors.email?.message || ""}
-                                    variant="outlined"
-                                />
-                            </div>
-
-                            <div className="form-field">
-                                <TextField
-                                    {...register('password', {
-                                        required: "Por favor digite sua senha"
-                                    })}
-                                    id="password"
-                                    label="Senha"
-                                    type="password"
-                                    size='small'
-                                    fullWidth
-                                    required
-                                    sx={{ mb: 2 }}
-                                    error={!!errors.password}
-                                    helperText={errors.password?.message || ""}
-                                    variant="outlined"
-                                />
-                            </div>
-
-                            <Button
-                                id="botao"
-                                type="submit"
-                                variant="contained"
+                        <div>
+                            <TextField
+                                {...register('email', {
+                                    required: 'Por favor digite seu email',
+                                    pattern: {
+                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                        message: 'Email inválido',
+                                    },
+                                })}
+                                id="email"
+                                label="Email"
+                                type="email"
+                                size="small"
                                 fullWidth
-                                size="large"
-                                color="primary"
-                            >
-                                Entrar
-                            </Button>
-                        </Box>
-                    </Paper>
-                </Grid>
-            </Grid>
+                                required
+                                sx={{ mb: 2 }}
+                                error={!!errors.email}
+                                helperText={errors.email?.message || ''}
+                                variant="outlined"
+                            />
+                        </div>
+
+                        <div>
+                            <TextField
+                                {...register('password', {
+                                    required: 'Por favor digite sua senha',
+                                })}
+                                id="password"
+                                label="Senha"
+                                type="password"
+                                size="small"
+                                fullWidth
+                                required
+                                sx={{ mb: 2 }}
+                                error={!!errors.password}
+                                helperText={errors.password?.message || ''}
+                                variant="outlined"
+                            />
+                        </div>
+
+                        <Button
+                            id="botao"
+                            type="submit"
+                            variant="contained"
+                            fullWidth
+                            size="large"
+                            color="primary"
+                        >
+                            Entrar
+                        </Button>
+                    </Box>
+                </Paper>
+            </Box>
         </>
     );
 }
