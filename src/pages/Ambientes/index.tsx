@@ -40,6 +40,9 @@ import { IToken } from "../../interfaces/token";
 interface IAmbientes {
     id: 0,
     nome: string,
+    capacidade: number,
+    status: string,
+    equipamentos_disponiveis: string,
     descricao: string,
     imagem: File | null
 }
@@ -66,12 +69,6 @@ export default function Ambientes() {
     useEffect(() => {
         if (localStorage.length == 0 || verificaTokenExpirado()) {
             navigate("/")
-        }
-
-        if (location.state?.snackbarMessage) {
-            setMessage(location.state.snackbarMessage);
-            setSeverity(location.state.snackbarSeverity);
-            setSnackbarVisible(true);
         }
 
         setLoading(true)
@@ -189,15 +186,27 @@ export default function Ambientes() {
                                     />
 
                                     <CardContent>
-                                        <Typography variant="h6" component="h2"
-                                            sx={{ color: 'text.primary' }}
-                                        >
-                                            {ambiente.nome}
-                                        </Typography>
+                                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                                            <Typography variant="h6" component="h2"
+                                                sx={{ color: 'text.primary' }}
+                                            >
+                                                {ambiente.nome}
+                                            </Typography>
+                                            <Chip label={ambiente.status} color={ambiente.status === 'Disponível' ? 'success' : 'warning'} />
+                                        </Box>
 
                                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                             {ambiente.descricao}
                                         </Typography>
+
+                                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                            Capacidade: {ambiente.capacidade}
+                                        </Typography>
+
+                                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                            Equipamentos Disponíveis: {ambiente.equipamentos_disponiveis}
+                                        </Typography>
+
                                     </CardContent>
                                     {token.user?.isAdmin == true &&
                                         <CardActions sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>

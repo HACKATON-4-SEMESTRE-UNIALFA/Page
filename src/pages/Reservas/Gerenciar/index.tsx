@@ -103,7 +103,7 @@ export default function GerenciarReservas() {
         }
 
         // Busca ambientes
-        axios.get(import.meta.env.VITE_URL + '/ambientes', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+        axios.get(import.meta.env.VITE_URL + '/ambientes?status=Disponível', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
                 setAmbientes(res.data);
             })

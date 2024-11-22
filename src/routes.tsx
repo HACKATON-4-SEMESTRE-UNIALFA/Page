@@ -20,6 +20,8 @@ import { AddModerator } from "@mui/icons-material"
 import Ambientes from "./pages/Ambientes"
 import Reservas from "./pages/Reservas"
 import GerenciarReservas from "./pages/Reservas/Gerenciar"
+import GerenciarAmbientes from "./pages/Ambientes/Gerenciar"
+import GerenciarHorarios from "./pages/Ambientes/HorarioFuncionamento"
 
 export const Rotas = () => {
 
@@ -43,6 +45,14 @@ export const Rotas = () => {
                 <Route
                     path="/ambientes"
                     element={<Ambientes />}
+                />
+                <Route
+                    path="/ambientes/:id"
+                    element={<GerenciarAmbientes />}
+                />
+                 <Route
+                    path="/horarios-funcionamento/:id"
+                    element={<GerenciarHorarios />}
                 />
                 <Route
                     path="/reservas"

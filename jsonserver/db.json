@@ -25,59 +25,25 @@
     {
       "id": 1,
       "nome": "Sala de Reuniões 1",
+      "capacidade": 10,
+      "status": "Disponível",
+      "equipamentos_disponiveis": "2 pc e microfone",
       "descricao": "Ambiente para reuniões com capacidade para 10 pessoas."
     },
     {
       "id": 2,
       "nome": "Auditório",
-      "descricao": "Auditório com capacidade para 50 pessoas e espaço para palestras."
+      "capacidade": 10,
+      "status": "Manutenção",
+      "equipamentos_disponiveis": "2 pc e microfone",
+      "descricao": "Ambiente para reuniões com capacidade para 10 pessoas."
     }
   ],
   "horarios_funcionamento": [
     {
-      "id": 1,
-      "ambiente_id": 1,
-      "horario": "00:00-01:00"
-    },
-    {
-      "id": 2,
-      "ambiente_id": 1,
-      "horario": "01:00-02:00"
-    },
-    {
-      "id": 3,
-      "ambiente_id": 1,
-      "horario": "02:00-03:00"
-    },
-    {
-      "id": 4,
-      "ambiente_id": 1,
-      "horario": "03:00-04:00"
-    },
-    {
-      "id": 5,
-      "ambiente_id": 1,
-      "horario": "04:00-05:00"
-    },
-    {
       "id": 6,
       "ambiente_id": 1,
       "horario": "05:00-06:00"
-    },
-    {
-      "id": 7,
-      "ambiente_id": 1,
-      "horario": "06:00-07:00"
-    },
-    {
-      "id": 8,
-      "ambiente_id": 1,
-      "horario": "07:00-08:00"
-    },
-    {
-      "id": 9,
-      "ambiente_id": 1,
-      "horario": "08:00-09:00"
     },
     {
       "id": 10,
@@ -85,74 +51,234 @@
       "horario": "09:00-10:00"
     },
     {
-      "id": 11,
-      "ambiente_id": 1,
-      "horario": "10:00-11:00"
-    },
-    {
-      "id": 12,
-      "ambiente_id": 1,
-      "horario": "11:00-12:00"
-    },
-    {
-      "id": 13,
-      "ambiente_id": 1,
-      "horario": "12:00-13:00"
-    },
-    {
-      "id": 14,
-      "ambiente_id": 1,
-      "horario": "13:00-14:00"
-    },
-    {
       "id": 15,
       "ambiente_id": 1,
       "horario": "14:00-15:00"
     },
     {
-      "id": 16,
-      "ambiente_id": 1,
-      "horario": "15:00-16:00"
+      "ambiente_id": "2",
+      "horario": "00:00-01:00",
+      "id": 25
     },
     {
-      "id": 17,
-      "ambiente_id": 1,
-      "horario": "16:00-17:00"
+      "ambiente_id": "2",
+      "horario": "04:00-05:00",
+      "id": 26
     },
     {
-      "id": 18,
-      "ambiente_id": 1,
-      "horario": "17:00-18:00"
+      "ambiente_id": "2",
+      "horario": "06:00-07:00",
+      "id": 27
     },
     {
-      "id": 19,
-      "ambiente_id": 1,
-      "horario": "18:00-19:00"
+      "ambiente_id": "2",
+      "horario": "01:00-02:00",
+      "id": 28
     },
     {
-      "id": 20,
-      "ambiente_id": 1,
-      "horario": "19:00-20:00"
+      "ambiente_id": "2",
+      "horario": "05:00-06:00",
+      "id": 29
     },
     {
-      "id": 21,
-      "ambiente_id": 1,
-      "horario": "20:00-21:00"
+      "ambiente_id": "2",
+      "horario": "07:00-08:00",
+      "id": 30
     },
     {
-      "id": 22,
-      "ambiente_id": 1,
-      "horario": "21:00-22:00"
+      "ambiente_id": "2",
+      "horario": "08:00-09:00",
+      "id": 31
     },
     {
-      "id": 23,
-      "ambiente_id": 1,
-      "horario": "22:00-23:00"
+      "ambiente_id": "2",
+      "horario": "09:00-10:00",
+      "id": 32
     },
     {
-      "id": 24,
-      "ambiente_id": 1,
-      "horario": "23:00-00:00"
+      "ambiente_id": "2",
+      "horario": "10:00-11:00",
+      "id": 33
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "11:00-12:00",
+      "id": 34
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "12:00-13:00",
+      "id": 35
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "13:00-14:00",
+      "id": 36
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "02:00-03:00",
+      "id": 37
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "03:00-04:00",
+      "id": 38
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "14:00-15:00",
+      "id": 39
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "15:00-16:00",
+      "id": 40
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "16:00-17:00",
+      "id": 41
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "17:00-18:00",
+      "id": 42
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "18:00-19:00",
+      "id": 43
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "19:00-20:00",
+      "id": 44
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "20:00-21:00",
+      "id": 45
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "21:00-22:00",
+      "id": 46
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "22:00-23:00",
+      "id": 47
+    },
+    {
+      "ambiente_id": "2",
+      "horario": "23:00-00:00",
+      "id": 48
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "00:00-01:00",
+      "id": 49
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "04:00-05:00",
+      "id": 50
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "06:00-07:00",
+      "id": 51
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "07:00-08:00",
+      "id": 52
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "08:00-09:00",
+      "id": 53
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "01:00-02:00",
+      "id": 54
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "10:00-11:00",
+      "id": 55
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "11:00-12:00",
+      "id": 56
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "03:00-04:00",
+      "id": 57
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "12:00-13:00",
+      "id": 58
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "13:00-14:00",
+      "id": 59
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "15:00-16:00",
+      "id": 60
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "16:00-17:00",
+      "id": 61
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "17:00-18:00",
+      "id": 62
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "18:00-19:00",
+      "id": 63
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "02:00-03:00",
+      "id": 64
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "19:00-20:00",
+      "id": 65
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "20:00-21:00",
+      "id": 66
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "21:00-22:00",
+      "id": 67
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "22:00-23:00",
+      "id": 68
+    },
+    {
+      "ambiente_id": "1",
+      "horario": "23:00-00:00",
+      "id": 69
     }
   ],
   "reservas": [
