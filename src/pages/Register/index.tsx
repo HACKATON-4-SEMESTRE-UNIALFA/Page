@@ -128,6 +128,7 @@ export default function Register() {
                             sx={{ mb: 2 }}
                             error={!!errors.email}
                             helperText={errors.email?.message || ''}
+                            autoComplete="off" // Adicionei autoComplete="off" para evitar o preenchimento automático
                         />
 
                         <TextField
@@ -139,6 +140,7 @@ export default function Register() {
                             sx={{ mb: 2 }}
                             error={!!errors.password}
                             helperText={errors.password?.message || ''}
+                            autoComplete="off" // Adicionei autoComplete="off" para evitar o preenchimento automático
                         />
 
                         <TextField
@@ -154,6 +156,7 @@ export default function Register() {
                             sx={{ mb: 2 }}
                             error={!!errors.confirmaSenha}
                             helperText={errors.confirmaSenha?.message || ''}
+                            autoComplete="off" // Adicionei autoComplete="off" para evitar o preenchimento automático
                         />
 
                         <TextField
@@ -206,7 +209,7 @@ export default function Register() {
                                     variant="outlined"
                                     fullWidth
                                     size="large"
-                                    color="warning"
+                                    color="error" // Aqui a cor foi ajustada para vermelho
                                 >
                                     Voltar
                                 </Button>
