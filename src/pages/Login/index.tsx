@@ -49,7 +49,10 @@ export default function Login() {
 
             localStorage.setItem(
                 'auth.token',
-               JSON.stringify(response.data)
+                JSON.stringify({
+                    accessToken: response.data.accessToken,
+                    usuario: response.data.usuario
+                })
             );
 
             handleShowSnackbar("Login efetuado com sucesso!", 'success');

@@ -141,10 +141,11 @@ export default function GerenciarHorarios() {
 
             axios.get(import.meta.env.VITE_URL + '/ambientes/' + ambienteId, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    setAmbientes(res.data);
+                    setAmbientes(res.data.ambiente);
                     setValue("id_ambiente", res.data.id.toString());
                 })
-                .catch(() => {
+                .catch((error) => {
+                    console.log(error);
                     handleShowSnackbar("Erro ao buscar Ambiente", "error")
                     setTimeout(() => {
                         setLoading(false);
@@ -152,7 +153,7 @@ export default function GerenciarHorarios() {
                     }, 1500);
                 })
 
-            axios.get(import.meta.env.VITE_URL + `/horarios_funcionamento?id_ambiente=${ambienteId}`, {
+            axios.get(import.meta.env.VITE_URL + `/horarios?id_ambiente=${ambienteId}`, {
                 headers: { Authorization: `Bearer ${token.accessToken}` }
             })
                 .then((res) => {

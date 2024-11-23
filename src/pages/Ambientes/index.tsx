@@ -45,6 +45,7 @@ interface IAmbientes {
     equipamentos_disponiveis: string,
     descricao: string,
     imagem: File | null
+    error: boolean
 }
 
 export default function Ambientes() {
@@ -75,11 +76,13 @@ export default function Ambientes() {
 
         axios.get(import.meta.env.VITE_URL + '/ambientes', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
-                setDadosAmbientes(res.data)
+                console.log(res.data)
+                setDadosAmbientes(res.data.ambiente)
                 setLoading(false)
             })
             .catch((err) => {
-                setDadosAmbientes(err)
+                console.log(err.data)
+                setDadosAmbientes(err.data)
                 setLoading(false)
             })
     }, [location])
@@ -149,7 +152,7 @@ export default function Ambientes() {
                             >
                                 Reservar
                             </Button>
-                            {token.user?.isAdmin == true &&
+                            {token.usuario?.isAdmin == true &&
                                 <Button
                                     variant="contained"
                                     color="success"
@@ -162,71 +165,77 @@ export default function Ambientes() {
                         </Box>
                     </Box>
 
-                    <Grid container spacing={3}>
-                        {dadosAmbientes.map((ambiente) => (
-                            <Grid size={{ md: 4, sm: 6, xs: 12 }} key={ambiente.id}>
-                                <Card
-                                    sx={{
-                                        height: '100%',
-                                        display: 'flex',
-                                        alignItems: 'stretch',
-                                        flexDirection: 'column',
-                                        transition: '0.3s',
-                                        '&:hover': {
-                                            transform: 'translateY(-4px)',
-                                            boxShadow: 4,
-                                        },
-                                    }}
-                                >
-                                    <CardMedia
-                                        component="img"
-                                        alt="green iguana"
-                                        height="150"
-                                        image="https://material-ui.com/static/images/cards/contemplative-reptile.jpg"
-                                    />
+                    {dadosAmbientes.length == 0 ? (
+                        <Typography variant="h6" component="h2" textAlign={"center"}>
+                            Nenhum Ambiente cadastrado
+                        </Typography>
+                    ) : (
+                        <Grid container spacing={3}>
+                            {dadosAmbientes.map((ambiente) => (
+                                <Grid size={{ md: 4, sm: 6, xs: 12 }} key={ambiente.id}>
+                                    <Card
+                                        sx={{
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'stretch',
+                                            flexDirection: 'column',
+                                            transition: '0.3s',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px)',
+                                                boxShadow: 4,
+                                            },
+                                        }}
+                                    >
+                                        <CardMedia
+                                            component="img"
+                                            alt="green iguana"
+                                            height="150"
+                                            image={import.meta.env.VITE_URL+ "/imagens/" + ambiente.imagem}
+                                        />
 
-                                    <CardContent>
-                                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                                            <Typography variant="h6" component="h2"
-                                                sx={{ color: 'text.primary' }}
-                                            >
-                                                {ambiente.nome}
+                                        <CardContent>
+                                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                                                <Typography variant="h6" component="h2"
+                                                    sx={{ color: 'text.primary' }}
+                                                >
+                                                    {ambiente.nome}
+                                                </Typography>
+                                                <Chip label={ambiente.status} color={ambiente.status === 'Disponível' ? 'success' : 'warning'} />
+                                            </Box>
+
+                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                {ambiente.descricao}
                                             </Typography>
-                                            <Chip label={ambiente.status} color={ambiente.status === 'Disponível' ? 'success' : 'warning'} />
-                                        </Box>
 
-                                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                            {ambiente.descricao}
-                                        </Typography>
+                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                Capacidade: {ambiente.capacidade}
+                                            </Typography>
 
-                                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                            Capacidade: {ambiente.capacidade}
-                                        </Typography>
+                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                Equipamentos Disponíveis: {ambiente.equipamentos_disponiveis}
+                                            </Typography>
 
-                                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                            Equipamentos Disponíveis: {ambiente.equipamentos_disponiveis}
-                                        </Typography>
+                                        </CardContent>
+                                        {token.usuario?.isAdmin == true &&
+                                            <CardActions sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                                                <Button color="primary" size="large"
+                                                    onClick={() => navigate(`/ambientes/${ambiente.id}`)}
+                                                >
+                                                    Editar
+                                                </Button>
+                                                <Button color="error" size="large"
+                                                    onClick={() => removeAmbiente(ambiente.id)}
+                                                >
+                                                    Excluir
+                                                </Button>
 
-                                    </CardContent>
-                                    {token.user?.isAdmin == true &&
-                                        <CardActions sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-                                            <Button color="primary" size="large"
-                                                onClick={() => navigate(`/ambientes/${ambiente.id}`)}
-                                            >
-                                                Editar
-                                            </Button>
-                                            <Button color="error" size="large"
-                                                onClick={() => removeAmbiente(ambiente.id)}
-                                            >
-                                                Excluir
-                                            </Button>
-
-                                        </CardActions>
-                                    }
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
+                                            </CardActions>
+                                        }
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
                 </Container>
             </LayoutDashboard >
         </>

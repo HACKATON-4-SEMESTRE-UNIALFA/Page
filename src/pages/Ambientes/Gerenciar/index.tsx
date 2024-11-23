@@ -98,7 +98,7 @@ export default function GerenciarAmbientes() {
             setLoading(true);
             axios.get(import.meta.env.VITE_URL + `/ambientes/${ambienteId}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    const ambienteData = res.data;
+                    const ambienteData = res.data.ambiente;
                     setIsEdit(true);
                     setValue("id", ambienteData.id || 0);
                     setValue("nome", ambienteData.nome || '');
