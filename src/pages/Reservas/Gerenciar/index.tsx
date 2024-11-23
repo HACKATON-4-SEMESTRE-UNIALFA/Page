@@ -112,21 +112,23 @@ export default function GerenciarReservas() {
         const reservaId = Number(id);
         if (!isNaN(reservaId)) {
             setLoading(true);
-            /*axios.get(import.meta.env.VITE_URL + `/reservas/${reservaId}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            axios.get(import.meta.env.VITE_URL + `/reservas/${reservaId}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    const premioData = res.data;
+                    const reservaData = res.data;
                     setIsEdit(true);
-                    setValue("id", premioData.id || 0);
-                    setValue("nome", premioData.nome || '');
-                    setValue("categoria", premioData.categoria || '');
-                    setValue("data_recebimento", premioData.data_recebimento || '');
-
+                    setValue("id", reservaData.id || 0);
+                    setValue("id_ambiente", reservaData.id_ambiente || '');
+                    setValue("horario", reservaData.horario || '');
+                    setValue("data", reservaData.data || '');
+                    setSelectedDate(reservaData.data ? dayjs(reservaData.data) : null);
+                    fetchAvailableTimes(reservaData.data);
+                    setSelectedTime(reservaData.horario || null);
                     setLoading(false)
                 })
                 .catch((err) => {
                     handleShowSnackbar(err.response.data.message, 'error');
                     setLoading(false)
-                })*/
+                })
         }
     }, [id, navigate, setValue]);
 
@@ -198,14 +200,14 @@ export default function GerenciarReservas() {
 
             // Simulando horários disponíveis - substitua pela sua chamada real à API
             const mockTimes = [
-                '09:00-09:59',
-                '10:00-10:59',
+                '09:00-10:00',
+                '10:00-11:00',
                 '11:00-11:59',
                 '14:00-14:59',
                 '15:00-15:59',
                 '16:00-16:59'
             ];
-
+            http://api/horariosdisponiveis/idAmbiente/2023-06-01
             setAvailableTimes(mockTimes);
         } catch (err) {
             console.error('Erro ao buscar horários disponíveis:', err);
@@ -293,8 +295,8 @@ export default function GerenciarReservas() {
                                 rules={{ required: 'Ambiente é obrigatório!' }}
                                 render={({ field }) => (
                                     <FormControl fullWidth error={!!errors.id_ambiente} sx={{ mb: 2 }}>
-                                        <InputLabel>Ambiente</InputLabel>
-                                        <Select {...field} label="Ambiente">
+                                        <InputLabel>Ambientes Disponíveis</InputLabel>
+                                        <Select {...field} label="Ambientes Disponíveis">
                                             <MenuItem value="">Selecione o Ambiente</MenuItem>
                                             {ambientes.map((ambiente) => (
                                                 <MenuItem key={ambiente.id} value={ambiente.id}>{ambiente.nome}</MenuItem>

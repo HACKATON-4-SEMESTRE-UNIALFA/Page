@@ -22,6 +22,8 @@ import Reservas from "./pages/Reservas"
 import GerenciarReservas from "./pages/Reservas/Gerenciar"
 import GerenciarAmbientes from "./pages/Ambientes/Gerenciar"
 import GerenciarHorarios from "./pages/Ambientes/HorarioFuncionamento"
+import Notificacoes from "./pages/Notificacoes"
+import Dashboard from "./pages/Dashboard"
 import Register from "./pages/Register"
 
 export const Rotas = () => {
@@ -41,12 +43,16 @@ export const Rotas = () => {
                     path="/register/"
                     element={<Register />}
                 />
-                {/*<Route
+                <Route
                     path="/dashboard"
                     element={
-                        <Voluntarios />
+                        <Dashboard />
                     }
-                />*/}
+                />
+                 <Route
+                    path="/notificacoes"
+                    element={<Notificacoes />}
+                />
                 <Route
                     path="/ambientes"
                     element={<Ambientes />}

@@ -152,7 +152,7 @@ export default function GerenciarHorarios() {
                     }, 1500);
                 })
 
-            axios.get(import.meta.env.VITE_URL + `/horarios_funcionamento?id_ambiente=${ambienteId}`, {
+            axios.get(import.meta.env.VITE_URL + `/horarios?id_ambiente=${ambienteId}`, {
                 headers: { Authorization: `Bearer ${token.accessToken}` }
             })
                 .then((res) => {
@@ -189,7 +189,7 @@ export default function GerenciarHorarios() {
             if (isEdit) {
                 // For PUT requests, we need to compare existing horarios with selected ones
                 const existingResponse = await axios.get(
-                    `${import.meta.env.VITE_URL}/horarios_funcionamento?id_ambiente=${id}`,
+                    `${import.meta.env.VITE_URL}/horarios?id_ambiente=${id}`,
                     config
                 );
                 const existingHorarios = existingResponse.data as IHorarioResponse[];
@@ -203,7 +203,7 @@ export default function GerenciarHorarios() {
                 await Promise.all(
                     horariosToRemove.map(horario =>
                         axios.delete(
-                            `${import.meta.env.VITE_URL}/horarios_funcionamento/${horario.id}`,
+                            `${import.meta.env.VITE_URL}/horarios/${horario.id}`,
                             config
                         )
                     )
@@ -213,7 +213,7 @@ export default function GerenciarHorarios() {
                 await Promise.all(
                     horariosToAdd.map(horario =>
                         axios.post(
-                            `${import.meta.env.VITE_URL}/horarios_funcionamento`,
+                            `${import.meta.env.VITE_URL}/horarios`,
                             {
                                 id_ambiente: data.id_ambiente,
                                 horario: horario
@@ -228,7 +228,7 @@ export default function GerenciarHorarios() {
                 await Promise.all(
                     selectedHorarios.map(horario =>
                         axios.post(
-                            `${import.meta.env.VITE_URL}/horarios_funcionamento`,
+                            `${import.meta.env.VITE_URL}/horarios`,
                             {
                                 id_ambiente: data.id_ambiente,
                                 horario: horario
