@@ -38,7 +38,7 @@ const ReservaAmbiente = () => {
       setLoading(true);
       setError(null); 
       const response = await fetch(
-        `http://localhost:3001/horarios_funcionamento?ambiente_id=${ambienteId}&date=${date}`
+        `http://localhost:3001/horarios_funcionamento?id_ambiente=${ambienteId}&date=${date}`
       );
       if (!response.ok) {
         throw new Error('Erro ao buscar horários disponíveis.');
@@ -72,7 +72,7 @@ const ReservaAmbiente = () => {
     try {
       setLoading(true);
       const payload = {
-        ambiente_id: ambienteId,
+        id_ambiente: ambienteId,
         data: selectedDate.toISOString().split('T')[0],
         horario: selectedTime,
       };

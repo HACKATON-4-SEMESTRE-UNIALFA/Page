@@ -51,7 +51,7 @@ export const Rotas = () => {
                     element={<GerenciarAmbientes />}
                 />
                  <Route
-                    path="/horarios-funcionamento/:id"
+                    path="/horarios/:id"
                     element={<GerenciarHorarios />}
                 />
                 <Route

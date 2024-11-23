@@ -30,13 +30,13 @@ import { IToken } from "../../../interfaces/token";
 
 interface IHorarioFuncionamento {
     id: number;
-    ambiente_id: string;
+    id_ambiente: string;
     horarios: string[];
 }
 
 interface IHorarioResponse {
     id: number;
-    ambiente_id: number;
+    id_ambiente: number;
     horario: string;
 }
 
@@ -84,7 +84,7 @@ export default function GerenciarHorarios() {
     } = useForm<IHorarioFuncionamento>({
         defaultValues: {
             id: 0,
-            ambiente_id: '',
+            id_ambiente: '',
             horarios: []
         }
     });
@@ -142,7 +142,7 @@ export default function GerenciarHorarios() {
             axios.get(import.meta.env.VITE_URL + '/ambientes/' + ambienteId, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     setAmbientes(res.data);
-                    setValue("ambiente_id", res.data.id.toString());
+                    setValue("id_ambiente", res.data.id.toString());
                 })
                 .catch(() => {
                     handleShowSnackbar("Erro ao buscar Ambiente", "error")
@@ -152,7 +152,7 @@ export default function GerenciarHorarios() {
                     }, 1500);
                 })
 
-            axios.get(import.meta.env.VITE_URL + `/horarios_funcionamento?ambiente_id=${ambienteId}`, {
+            axios.get(import.meta.env.VITE_URL + `/horarios_funcionamento?id_ambiente=${ambienteId}`, {
                 headers: { Authorization: `Bearer ${token.accessToken}` }
             })
                 .then((res) => {
@@ -189,7 +189,7 @@ export default function GerenciarHorarios() {
             if (isEdit) {
                 // For PUT requests, we need to compare existing horarios with selected ones
                 const existingResponse = await axios.get(
-                    `${import.meta.env.VITE_URL}/horarios_funcionamento?ambiente_id=${id}`,
+                    `${import.meta.env.VITE_URL}/horarios_funcionamento?id_ambiente=${id}`,
                     config
                 );
                 const existingHorarios = existingResponse.data as IHorarioResponse[];
@@ -215,7 +215,7 @@ export default function GerenciarHorarios() {
                         axios.post(
                             `${import.meta.env.VITE_URL}/horarios_funcionamento`,
                             {
-                                ambiente_id: data.ambiente_id,
+                                id_ambiente: data.id_ambiente,
                                 horario: horario
                             },
                             config
@@ -230,7 +230,7 @@ export default function GerenciarHorarios() {
                         axios.post(
                             `${import.meta.env.VITE_URL}/horarios_funcionamento`,
                             {
-                                ambiente_id: data.ambiente_id,
+                                id_ambiente: data.id_ambiente,
                                 horario: horario
                             },
                             config
@@ -277,14 +277,14 @@ export default function GerenciarHorarios() {
 
                         <Box component="form" onSubmit={handleSubmit(submitForm)} noValidate>
                             <Controller
-                                name="ambiente_id"
+                                name="id_ambiente"
                                 control={control}
                                 rules={{ required: "Selecione um ambiente" }}
                                 render={({ field }) => (
                                     <FormControl
                                         fullWidth
                                         sx={{ mb: 2 }}
-                                        error={!!errors.ambiente_id}
+                                        error={!!errors.id_ambiente}
                                     >
                                         <InputLabel>Ambiente</InputLabel>
                                         <Select
@@ -293,8 +293,8 @@ export default function GerenciarHorarios() {
                                         >
                                             <MenuItem value={ambientes?.id}>{ambientes?.nome}</MenuItem>
                                         </Select>
-                                        {errors.ambiente_id && (
-                                            <FormHelperText>{errors.ambiente_id.message}</FormHelperText>
+                                        {errors.id_ambiente && (
+                                            <FormHelperText>{errors.id_ambiente.message}</FormHelperText>
                                         )}
                                     </FormControl>
                                 )}

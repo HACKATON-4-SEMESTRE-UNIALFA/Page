@@ -171,7 +171,7 @@ export default function GerenciarAmbientes() {
                     'success'
                 );
                 setLoading(false);
-                navigate('/horarios-funcionamento/' + response.data.id, {
+                navigate('/horarios/' + response.data.ambiente.id, {
                     state: {
                         setAmbiente: response.data
                     }
@@ -320,7 +320,7 @@ export default function GerenciarAmbientes() {
                                     fullWidth
                                     size="large"
                                     sx={{ mt: 2 }}
-                                    onClick={() => navigate("/horarios-funcionamento/" + id)}
+                                    onClick={() => navigate("/horarios/" + id)}
                                 >
                                     Editar Horários de Funcionamento
                                 </Button>
