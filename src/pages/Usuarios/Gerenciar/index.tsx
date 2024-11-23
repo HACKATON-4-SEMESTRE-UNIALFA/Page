@@ -280,7 +280,7 @@ export default function GerenciarUsuarios() {
                                         label="CPF"
                                         value={field.value || ''}
                                         InputProps={{
-                                            readOnly: true,
+                                            readOnly: isEdit,
                                         }}
                                         error={!!errors.cpf}
                                         helperText={errors.cpf?.message}

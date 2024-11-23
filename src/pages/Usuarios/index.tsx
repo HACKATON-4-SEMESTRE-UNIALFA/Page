@@ -90,21 +90,33 @@ export default function Usuarios() {
             filterable: false,
             sortable: false,
             headerAlign: 'center',
-            align: 'center'
+            align: 'center',
         },
         {
             field: 'nome',
             headerName: 'Nome',
             width: 250,
             filterable: true,
+            headerAlign: 'left',
+            align: 'left',
+            renderCell: (params: GridRenderCellParams) => (
+                <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%' }}>
+                    {params.value}
+                </Typography>
+            ),
         },
         {
             field: 'email',
             headerName: 'E-mail',
-            width: 200,
+            width: 250,
             filterable: true,
-            headerAlign: 'center',
-            align: 'center',
+            headerAlign: 'left',
+            align: 'left',
+            renderCell: (params: GridRenderCellParams) => (
+                <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%' }}>
+                    {params.value}
+                </Typography>
+            ),
         },
         {
             field: 'telefone',
@@ -113,6 +125,11 @@ export default function Usuarios() {
             filterable: true,
             headerAlign: 'center',
             align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
+                    {params.value}
+                </Typography>
+            ),
         },
         {
             field: 'cpf',
@@ -121,6 +138,11 @@ export default function Usuarios() {
             filterable: true,
             headerAlign: 'center',
             align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
+                    {params.value}
+                </Typography>
+            ),
         },
         {
             field: 'isAdmin',
@@ -130,12 +152,10 @@ export default function Usuarios() {
             headerAlign: 'center',
             align: 'center',
             renderCell: (params: GridRenderCellParams) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                     <Chip label={params.value ? 'Sim' : 'Não'} />
                 </Box>
-                
-            )
-
+            ),
         },
         {
             field: 'acoes',
@@ -147,7 +167,7 @@ export default function Usuarios() {
             headerAlign: 'center',
             align: 'center',
             renderCell: (params: GridRenderCellParams) => (
-                <Box >
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
                     <IconButton
                         color="primary"
                         onClick={() => navigate(`/usuarios/${params.row.id}`)}
@@ -166,6 +186,7 @@ export default function Usuarios() {
             ),
         },
     ];
+
 
     const removeUser = useCallback((id: number) => {
         setDialogState({
