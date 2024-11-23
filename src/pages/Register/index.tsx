@@ -20,6 +20,7 @@ type IRegister = {
     confirmaSenha: string;
     cpf: string;
     telefone: string;
+    isAdmin: boolean;
 };
 
 export default function Register() {
@@ -45,10 +46,25 @@ export default function Register() {
     const onSubmit = useCallback(async (data: IRegister) => {
         setLoading(true);
         try {
-            await axios.post(`${import.meta.env.VITE_URL}/register`, data);
+            // Remover caracteres especiais do CPF e telefone
+            const cleanCpf = data.cpf.replace(/\D/g, ''); // Remove tudo que não é número
+            const cleanTelefone = data.telefone.replace(/\D/g, ''); // Remove tudo que não é número
+
+            // Atualizar os dados com os valores limpos
+            const cleanData = {
+                ...data,
+                cpf: cleanCpf,
+                telefone: cleanTelefone,
+                isAdmin: false
+            };
+
+            console.log('Dados enviados:', cleanData);
+
+            await axios.post(`${import.meta.env.VITE_URL}/usuarios`, cleanData);
+
             handleShowSnackbar('Registro efetuado com sucesso!', 'success');
             setTimeout(() => {
-                navigate('/login');
+                navigate('/');
             }, 1500);
         } catch (error) {
             setLoading(false);
@@ -56,6 +72,7 @@ export default function Register() {
             handleShowSnackbar('Erro ao registrar usuário!', 'error');
         }
     }, [navigate]);
+
 
     return (
         <>
