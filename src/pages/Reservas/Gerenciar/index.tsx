@@ -33,7 +33,7 @@ import { ptBR } from '@mui/x-date-pickers/locales';
 
 interface IReserva {
     id: number
-    ambiente_id: string
+    id_ambiente: string
     horario: string
     data: string
     usuario_id: number
@@ -65,7 +65,7 @@ export default function GerenciarReservas() {
     } = useForm<IReserva>({
         defaultValues: {
             id: 0,
-            ambiente_id: '',
+            id_ambiente: '',
             horario: '',
             data: ''
         }
@@ -129,6 +129,18 @@ export default function GerenciarReservas() {
                 })*/
         }
     }, [id, navigate, setValue]);
+
+    const getDisabledDates = useCallback(() => {
+        const today = dayjs();
+        const disabledDates: string[] = [];
+        for (let i = 0; i < 31; i++) {
+            const date = today.add(i, 'day');
+            if (date.day() === 0 || date.day() === 6) {
+                disabledDates.push(date.format('YYYY-MM-DD'));
+            }
+        }
+        return disabledDates;
+    }, []);
 
     function submitForm(data: IReserva, event?: BaseSyntheticEvent<object, any, any> | undefined): unknown {
         throw new Error("Function not implemented.");
@@ -276,11 +288,11 @@ export default function GerenciarReservas() {
                         <Box component="form" onSubmit={handleSubmit(submitForm)} noValidate>
 
                             <Controller
-                                name="ambiente_id"
+                                name="id_ambiente"
                                 control={control}
                                 rules={{ required: 'Ambiente é obrigatório!' }}
                                 render={({ field }) => (
-                                    <FormControl fullWidth error={!!errors.ambiente_id} sx={{ mb: 2 }}>
+                                    <FormControl fullWidth error={!!errors.id_ambiente} sx={{ mb: 2 }}>
                                         <InputLabel>Ambiente</InputLabel>
                                         <Select {...field} label="Ambiente">
                                             <MenuItem value="">Selecione o Ambiente</MenuItem>
@@ -289,7 +301,7 @@ export default function GerenciarReservas() {
                                             ))}
                                         </Select>
                                         {errors && (
-                                            <FormHelperText>{errors?.ambiente_id?.message}</FormHelperText>
+                                            <FormHelperText>{errors?.id_ambiente?.message}</FormHelperText>
                                         )}
                                     </FormControl>
                                 )}
@@ -316,17 +328,15 @@ export default function GerenciarReservas() {
                                             displayStaticWrapperAs="desktop" // Mantém o DatePicker estático
                                             value={selectedDate}
                                             disablePast
+                                            minDate={dayjs().add(1, 'day')}
                                             maxDate={dayjs().add(30, 'day')}
                                             onChange={(date) => {
                                                 field.onChange(date);
                                                 handleDateChange(date);
                                             }}
                                             shouldDisableDate={(date: Dayjs) => {
-                                                // Datas específicas para desabilitar
-                                                const disabledDates = [
-                                                    '2024-12-25',
-                                                    '2024-12-29'
-                                                ];
+                                                const disabledDates = getDisabledDates();
+
                                                 return disabledDates.includes(date.format('YYYY-MM-DD'));
                                             }}
                                         />

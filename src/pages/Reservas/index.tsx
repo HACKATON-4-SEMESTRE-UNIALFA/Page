@@ -9,7 +9,8 @@ import {
     Button,
     Box,
     IconButton,
-    Avatar
+    Avatar,
+    Tooltip
 } from '@mui/material'
 import {
     DataGrid,
@@ -21,15 +22,17 @@ import { ptBR } from '@mui/x-data-grid/locales'
 import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import HistoryIcon from '@mui/icons-material/History';
 import { LayoutDashboard } from "../../components/LayoutDashboard"
 import { ConfirmationDialog } from "../../components/Dialog"
 import { SnackbarMui } from "../../components/Snackbar"
 import { IToken } from "../../interfaces/token"
 import { GridInitialStateCommunity } from "@mui/x-data-grid/models/gridStateCommunity"
+import ModalHist from "../../components/ModalHist"
 
 interface IReserva {
     id: number
-    ambiente_id: number
+    id_ambiente: number
     horario: string
     data: string
     usuario_id: number
@@ -49,6 +52,10 @@ export default function Reservas() {
     const [loading, setLoading] = useState(false)
     const [dadosReservas, setDadosReservas] = useState<Array<IReserva>>([])
     const [ambientes, setAmbientes] = useState<Map<number, string>>(new Map())
+    const [historico, setHistorico] = useState([]);
+    const [openModal, setOpenModal] = useState(false);
+
+
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
@@ -89,6 +96,9 @@ export default function Reservas() {
             })
     }, [])
 
+    const handleOpen = useCallback(() => setOpenModal(true), []);
+    const handleClose = useCallback(() => setOpenModal(false), []);
+
     const handleShowSnackbar = useCallback((
         message: string,
         severity: 'success' | 'error' | 'warning' | 'info'
@@ -109,7 +119,7 @@ export default function Reservas() {
             align: 'center'
         },
         {
-            field: 'ambiente_id',
+            field: 'id_ambiente',
             headerName: 'Ambiente',
             width: 200,
             filterable: true,
@@ -153,24 +163,48 @@ export default function Reservas() {
             align: 'center',
             renderCell: (params: GridRenderCellParams) => (
                 <Box >
-                    <IconButton
-                        color="primary"
-                        onClick={() => navigate(`/reservas/${params.row.id}`)}
-                        size="large"
-                    >
-                        <EditIcon />
-                    </IconButton>
-                    <IconButton
-                        color="error"
-                        size="large"
-                        onClick={() => cancelaReserva(params.row.id)}
-                    >
-                        <DeleteIcon />
-                    </IconButton>
-                </Box>
+                    <Tooltip title="Editar" placement="top" arrow>
+                        <IconButton
+                            color="primary"
+                            onClick={() => navigate(`/reservas/${params.row.id}`)}
+                            size="large"
+                        >
+                            <EditIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Cancelar" placement="top" arrow>
+                        <IconButton
+                            color="error"
+                            size="large"
+                            onClick={() => cancelaReserva(params.row.id)}
+                        >
+                            <DeleteIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Histórico" placement="top" arrow>
+                        <IconButton
+                            color="info"
+                            size="large"
+                            onClick={() => fetchHistorico(params.row.id)}
+                        >
+                            <HistoryIcon />
+                        </IconButton>
+                    </Tooltip>
+                </Box >
             ),
         },
     ]
+
+
+    const fetchHistorico = async (idReserva: number) => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_URL}/historico?id_reserva=${idReserva}`);
+            setHistorico(response.data);
+            handleOpen();
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const cancelaReserva = useCallback((id: number) => {
 
@@ -199,6 +233,11 @@ export default function Reservas() {
     return (
         <>
             <Loading visible={loading} />
+            <ModalHist
+                historico={historico}
+                open={openModal}
+                handleClose={handleClose}
+            />
             <LayoutDashboard>
                 <SnackbarMui
                     open={snackbarVisible}
