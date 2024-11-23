@@ -100,7 +100,7 @@ export default function GerenciarUsuarios() {
         if (!isNaN(idUser)) {
             setLoading(true);
             axios
-                .get(import.meta.env.VITE_URL + `/usuarios/${idUser}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+                .get(import.meta.env.VITE_API_URL + `/usuarios/${idUser}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     const userData = res.data.usuario;
                     setIsEdit(true);
@@ -121,8 +121,8 @@ export default function GerenciarUsuarios() {
     const submitForm: SubmitHandler<IForm> = useCallback((data) => {
         setLoading(true);
         const request = isEdit
-            ? axios.put(import.meta.env.VITE_URL + `/usuarios/${id}`, data, { headers: { Authorization: `Bearer ${token.accessToken}` } })
-            : axios.post(import.meta.env.VITE_URL + '/usuarios/', data, { headers: { Authorization: `Bearer ${token.accessToken}` } });
+            ? axios.put(import.meta.env.VITE_API_URL + `/usuarios/${id}`, data, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            : axios.post(import.meta.env.VITE_API_URL + '/usuarios/', data, { headers: { Authorization: `Bearer ${token.accessToken}` } });
 
         request
             .then(() => {
