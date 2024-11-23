@@ -16,7 +16,8 @@ import {
     DataGrid,
     GridColDef,
     GridValueGetter,
-    GridRenderCellParams
+    GridRenderCellParams,
+    GridAlignment
 } from '@mui/x-data-grid'
 import { ptBR } from '@mui/x-data-grid/locales'
 import AddIcon from '@mui/icons-material/Add'
@@ -44,6 +45,11 @@ interface IAmbiente {
     nome: string
 }
 
+interface IUsuario{
+    id: number
+    nome: string
+}
+
 export default function Reservas() {
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [message, setMessage] = useState("");
@@ -52,6 +58,8 @@ export default function Reservas() {
     const [loading, setLoading] = useState(false)
     const [dadosReservas, setDadosReservas] = useState<Array<IReserva>>([])
     const [ambientes, setAmbientes] = useState<Map<number, string>>(new Map())
+    const [usuarios, setUsuarios] = useState<Map<number, string>>(new Map())
+
     const [historico, setHistorico] = useState([]);
     const [openModal, setOpenModal] = useState(false);
 
@@ -85,15 +93,39 @@ export default function Reservas() {
             })
             .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"))
 
-        axios.get(import.meta.env.VITE_URL + '/reservas?usuario_id=' + token.user.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
-            .then((res) => {
-                setDadosReservas(res.data)
-                setLoading(false)
-            })
-            .catch((err) => {
-                setDadosReservas(err)
-                setLoading(false)
-            })
+        // Busca reservas
+        if (token.user.isAdmin) {
+            // Busca Usuarios
+            axios.get(import.meta.env.VITE_URL + '/users', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+                .then((res) => {
+                    const usuarioMap = new Map<number, string>()
+                    res.data.forEach((usuario: IUsuario) => {
+                        usuarioMap.set(usuario.id, usuario.nome)
+                    })
+                    setUsuarios(usuarioMap)
+                })
+                .catch(() => handleShowSnackbar("Erro ao buscar Usuários", "error"))
+
+            axios.get(import.meta.env.VITE_URL + '/reservas', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+                .then((res) => {
+                    setDadosReservas(res.data)
+                    setLoading(false)
+                })
+                .catch((err) => {
+                    setDadosReservas(err)
+                    setLoading(false)
+                })
+        } else {
+            axios.get(import.meta.env.VITE_URL + '/reservas?id_usuario=' + token.user.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+                .then((res) => {
+                    setDadosReservas(res.data)
+                    setLoading(false)
+                })
+                .catch((err) => {
+                    setDadosReservas(err)
+                    setLoading(false)
+                })
+        }
     }, [])
 
     const handleOpen = useCallback(() => setOpenModal(true), []);
@@ -118,6 +150,19 @@ export default function Reservas() {
             headerAlign: 'center',
             align: 'center'
         },
+        ...(token.user.isAdmin
+            ? [
+                {
+                    field: 'id_usuario',
+                    headerName: 'Criado por',
+                    width: 150,
+                    filterable: true,
+                    headerAlign: 'center' as GridAlignment,
+                    align: 'center' as GridAlignment,
+                    valueGetter: (params: number) => usuarios.get(params) || "Desconhecido",
+                },
+            ]
+            : []),
         {
             field: 'id_ambiente',
             headerName: 'Ambiente',
@@ -161,53 +206,73 @@ export default function Reservas() {
             sortable: false,
             headerAlign: 'center',
             align: 'center',
-            renderCell: (params: GridRenderCellParams) => (
-                <Box >
-                    <Tooltip title="Editar" placement="top" arrow>
-                        <IconButton
-                            color="primary"
-                            onClick={() => navigate(`/reservas/${params.row.id}`)}
-                            size="large"
-                        >
-                            <EditIcon />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Cancelar" placement="top" arrow>
-                        <IconButton
-                            color="error"
-                            size="large"
-                            onClick={() => cancelaReserva(params.row.id)}
-                        >
-                            <DeleteIcon />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Histórico" placement="top" arrow>
-                        <IconButton
-                            color="info"
-                            size="large"
-                            onClick={() => fetchHistorico(params.row.id)}
-                        >
-                            <HistoryIcon />
-                        </IconButton>
-                    </Tooltip>
-                </Box >
-            ),
+            renderCell: (params: GridRenderCellParams) => {
+                if (params.row.status !== 'ativa') {
+                    return (
+                        <Box >
+                            <Tooltip title="Histórico" placement="top" arrow>
+                                <IconButton
+                                    color="info"
+                                    size="large"
+                                    onClick={() => fetchHistorico(params.row.id)}
+                                >
+                                    <HistoryIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </Box >
+                    );
+                }
+
+                return (
+                    <Box >
+                        <Tooltip title="Editar" placement="top" arrow>
+                            <IconButton
+                                color="primary"
+                                onClick={() => navigate(`/reservas/${params.row.id}`)}
+                                size="large"
+                            >
+                                <EditIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Cancelar" placement="top" arrow>
+                            <IconButton
+                                color="error"
+                                size="large"
+                                onClick={() => cancelaReserva(params.row.id)}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Histórico" placement="top" arrow>
+                            <IconButton
+                                color="info"
+                                size="large"
+                                onClick={() => fetchHistorico(params.row.id)}
+                            >
+                                <HistoryIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </Box >
+                );
+            },
         },
     ]
 
 
-    const fetchHistorico = async (idReserva: number) => {
+    const fetchHistorico = useCallback(async (idReserva: number) => {
+        setLoading(true);
         try {
             const response = await axios.get(`${import.meta.env.VITE_URL}/historico?id_reserva=${idReserva}`);
             setHistorico(response.data);
             handleOpen();
+            setLoading(false);
         } catch (error) {
             console.error(error);
+            setLoading(false);
         }
-    };
+    }, []);
 
     const cancelaReserva = useCallback((id: number) => {
-
         setDialogState({
             open: true,
             id: id
@@ -216,7 +281,6 @@ export default function Reservas() {
 
     const handleConfirmedDelete = useCallback(() => {
         const id = dialogState.id;
-
         axios.delete(import.meta.env.VITE_URL + `/reservas/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then(() => {
                 handleShowSnackbar("Reserva cancelada com sucesso", "success");
@@ -259,7 +323,7 @@ export default function Reservas() {
                     />
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                         <Typography variant="h4" component="h1">
-                            Reservas
+                            {token.user.isAdmin ? "Todas as Reservas" : "Minhas Reservas"}
                         </Typography>
                         <Button
                             variant="contained"
