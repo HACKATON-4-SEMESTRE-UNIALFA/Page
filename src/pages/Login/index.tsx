@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 import {
     Paper,
-    Grid,
     TextField,
     Button,
     Typography,
@@ -9,7 +8,7 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import { SnackbarMui } from '../../components/Snackbar';
 import { Loading } from '../../components/Loading';
 import './login.styles.css';
@@ -39,7 +38,7 @@ export default function Login() {
     };
 
     const onSubmit = useCallback(async (data: ILogin) => {
-        console.log("Dados enviados:", data); // Adicione este log
+        console.log("Dados enviados:", data);
         setLoading(true);
         try {
             const response = await axios.post(`${import.meta.env.VITE_URL}/login`, {
@@ -161,6 +160,21 @@ export default function Login() {
                         >
                             Entrar
                         </Button>
+
+                        {/* Link para registro */}
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                mt: 2,
+                                textAlign: 'center',
+                                color: 'primary.main',
+                            }}
+                        >
+                            Não tem uma conta?{' '}
+                            <Link to="/register" style={{ color: '#1976d2', textDecoration: 'none' }}>
+                                Registre-se
+                            </Link>
+                        </Typography>
                     </Box>
                 </Paper>
             </Box>

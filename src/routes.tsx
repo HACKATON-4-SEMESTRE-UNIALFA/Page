@@ -22,6 +22,7 @@ import Reservas from "./pages/Reservas"
 import GerenciarReservas from "./pages/Reservas/Gerenciar"
 import GerenciarAmbientes from "./pages/Ambientes/Gerenciar"
 import GerenciarHorarios from "./pages/Ambientes/HorarioFuncionamento"
+import Register from "./pages/Register"
 
 export const Rotas = () => {
 
@@ -35,6 +36,10 @@ export const Rotas = () => {
                     element={
                         <Login />
                     }
+                />
+                <Route
+                    path="/register/"
+                    element={<Register />}
                 />
                 {/*<Route
                     path="/dashboard"
@@ -50,7 +55,7 @@ export const Rotas = () => {
                     path="/ambientes/:id"
                     element={<GerenciarAmbientes />}
                 />
-                 <Route
+                <Route
                     path="/horarios-funcionamento/:id"
                     element={<GerenciarHorarios />}
                 />
