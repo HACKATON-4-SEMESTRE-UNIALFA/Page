@@ -60,7 +60,7 @@ export default function Usuarios() {
 
         setLoading(true);
 
-        axios.get(import.meta.env.VITE_API_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+        axios.get(import.meta.env.VITE_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
                 console.log(res.data);
                 setdadosUsers(res.data.usuario);
@@ -98,7 +98,7 @@ export default function Usuarios() {
             width: 250,
             filterable: true,
             headerAlign: 'left',
-            align: 'left',
+            align: 'center',
             renderCell: (params: GridRenderCellParams) => (
                 <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%' }}>
                     {params.value}
@@ -111,7 +111,7 @@ export default function Usuarios() {
             width: 250,
             filterable: true,
             headerAlign: 'left',
-            align: 'left',
+            align: 'center',
             renderCell: (params: GridRenderCellParams) => (
                 <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%' }}>
                     {params.value}
@@ -198,7 +198,7 @@ export default function Usuarios() {
     const handleConfirmedDelete = useCallback(() => {
         const id = dialogState.id;
 
-        axios.delete(import.meta.env.VITE_API_URL + `/usuarios/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+        axios.delete(import.meta.env.VITE_URL + `/usuarios/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then(() => {
                 handleShowSnackbar("Usuário removido com sucesso", "success");
                 setdadosUsers((prevRows) => prevRows.filter((row) => row.id !== id));
@@ -260,13 +260,16 @@ export default function Usuarios() {
                             disableColumnResize
                             disableRowSelectionOnClick
                             sx={{
-                                height: 400,
+                                height: 450,
                                 boxShadow: 2,
                                 border: 2,
                                 borderColor: 'primary.light',
                                 '& .MuiDataGrid-cell': {
                                     overflow: 'visible',
                                     textOverflow: 'clip',
+                                    display: 'flex',
+                                    alignItems: 'center', // Centraliza verticalmente
+                                    justifyContent: 'center', // Centraliza horizontalmente
                                 },
                                 '& .MuiDataGrid-cell:hover': {
                                     color: 'primary.main',
@@ -288,6 +291,7 @@ export default function Usuarios() {
                                 '& .MuiTablePagination-root': {
                                     overflow: 'hidden',
                                 }
+                        
                             }}
                         />
                     </Box>

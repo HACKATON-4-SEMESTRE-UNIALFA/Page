@@ -30,6 +30,7 @@ import { SnackbarMui } from "../../components/Snackbar"
 import { IToken } from "../../interfaces/token"
 import { GridInitialStateCommunity } from "@mui/x-data-grid/models/gridStateCommunity"
 import ModalHist from "../../components/ModalHist"
+import ModalCanReserva from "../../components/ModalCanReserva"
 
 interface IReserva {
     id: number
@@ -62,16 +63,16 @@ export default function Reservas() {
 
     const [historico, setHistorico] = useState([]);
     const [openModal, setOpenModal] = useState(false);
+    const [modalAberto, setModalAberto] = useState(false);
+    const [idReservaSelecionada, setIdReservaSelecionada] = useState<number | null>(null);
+
 
 
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
     })
-    const [dialogState, setDialogState] = useState({
-        open: false,
-        id: null as number | null
-    })
+
 
     const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken
 
@@ -111,7 +112,7 @@ export default function Reservas() {
 
             axios.get(import.meta.env.VITE_URL + '/reservas', { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    setDadosReservas(res.data)
+                    setDadosReservas(res.data.reserva)
                     setLoading(false)
                 })
                 .catch((err) => {
@@ -130,6 +131,16 @@ export default function Reservas() {
                 })
         }
     }, [])
+
+    const abrirModal = useCallback((id: number) => {
+        setIdReservaSelecionada(id);
+        setModalAberto(true);
+    }, []);
+
+    const fecharModal = useCallback(() => {
+        setModalAberto(false);
+        setIdReservaSelecionada(null);
+    }, []);
 
     const handleOpen = useCallback(() => setOpenModal(true), []);
     const handleClose = useCallback(() => setOpenModal(false), []);
@@ -210,7 +221,7 @@ export default function Reservas() {
             headerAlign: 'center',
             align: 'center',
             renderCell: (params: GridRenderCellParams) => {
-                if (params.row.status !== 'ativa') {
+                if (params.row.status !== 'ativo') {
                     return (
                         <Box >
                             <Tooltip title="Histórico" placement="top" arrow>
@@ -241,7 +252,7 @@ export default function Reservas() {
                             <IconButton
                                 color="error"
                                 size="large"
-                                onClick={() => cancelaReserva(params.row.id)}
+                                onClick={() => abrirModal(params.row.id)}
                             >
                                 <DeleteIcon />
                             </IconButton>
@@ -275,27 +286,21 @@ export default function Reservas() {
         }
     }, []);
 
-    const cancelaReserva = useCallback((id: number) => {
-        setDialogState({
-            open: true,
-            id: id
-        });
-    }, []);
+    const salvarCancelamento = useCallback(async (motivo: string) => {
+        if (!idReservaSelecionada) return;
 
-    const handleConfirmedDelete = useCallback(() => {
-        const id = dialogState.id;
-        axios.delete(import.meta.env.VITE_URL + `/reservas/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
-            .then(() => {
-                handleShowSnackbar("Reserva cancelada com sucesso", "success");
-                setDadosReservas((prevRows) => prevRows.filter((row) => row.id !== id));
-                setLoading(false)
-            })
-            .catch((error) => {
-                const errorMessage = error.response?.data || "Erro ao cancelar Reserva";
-                setLoading(false)
-                handleShowSnackbar(errorMessage, "error");
-            })
-    }, [dialogState.id, setLoading]);
+        try {
+            await axios.post(`/reservas/desativa/${idReservaSelecionada}`, {
+                motivo
+            }, { headers: { Authorization: `Bearer ${token.accessToken}` } });
+            fecharModal(); // Fecha o modal após o sucesso
+            handleShowSnackbar("Reserva Cancelada realizado com sucesso!", "success");
+        } catch (error) {
+            fecharModal();
+            console.error("Erro ao salvar o cancelamento:", error);
+            handleShowSnackbar("Ocorreu um erro ao cancelar a reserva", "error");
+        }
+    }, [idReservaSelecionada, handleShowSnackbar, fecharModal]);
 
     return (
         <>
@@ -317,13 +322,13 @@ export default function Reservas() {
                     }}
                 />
                 <Container maxWidth="xl" sx={{ mb: 4, mt: 3 }}>
-                    <ConfirmationDialog
-                        open={dialogState.open}
-                        title="Confirmar exclusão"
-                        message="Tem certeza que deseja cancelar esta Reserva ?"
-                        onConfirm={handleConfirmedDelete}
-                        onClose={() => setDialogState({ open: false, id: null })}
-                    />
+                    {idReservaSelecionada &&
+                        <ModalCanReserva
+                            open={modalAberto}
+                            handleClose={fecharModal}
+                            onSave={salvarCancelamento}
+                        />
+                    }
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                         <Typography variant="h4" component="h1">
                             {token.usuario.isAdmin ? "Todas as Reservas" : "Minhas Reservas"}

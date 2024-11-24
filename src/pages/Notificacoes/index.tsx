@@ -61,19 +61,22 @@ export default function Notificacoes() {
         setLoading(true)
 
         // Busca Notificações
-        if (token.user.isAdmin) {
+        if (token.usuario.isAdmin) {
             // Busca Usuarios
-            axios.get(import.meta.env.VITE_URL + '/users', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            axios.get(import.meta.env.VITE_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     const usuarioMap = new Map<number, string>()
-                    res.data.forEach((usuario: IUsuario) => {
+                    res.data.usuario.forEach((usuario: IUsuario) => {
                         usuarioMap.set(usuario.id, usuario.nome)
                     })
                     setUsuarios(usuarioMap)
                 })
-                .catch(() => handleShowSnackbar("Erro ao buscar Usuários", "error"))
+                .catch((err) => {
+                    console.log(err)
+                    handleShowSnackbar("Erro ao buscar Usuários", "error")
+                })
 
-            axios.get(import.meta.env.VITE_URL + '/notificacoes', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            axios.get(import.meta.env.VITE_URL + '/reserva/notificacao', { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     setNotificacoes(res.data)
                     setLoading(false)
@@ -83,7 +86,7 @@ export default function Notificacoes() {
                     setLoading(false)
                 })
         } else {
-            axios.get(import.meta.env.VITE_URL + '/notificacoes?id_usuario=' + token.user.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            axios.get(import.meta.env.VITE_URL + '/notificacoes?id_usuario=' + token.usuario.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     setNotificacoes(res.data)
                     setLoading(false)
@@ -111,7 +114,7 @@ export default function Notificacoes() {
             headerAlign: 'center',
             align: 'center'
         },
-        ...(token.user.isAdmin
+        ...(token.usuario.isAdmin
             ? [
                 {
                     field: 'id_usuario',

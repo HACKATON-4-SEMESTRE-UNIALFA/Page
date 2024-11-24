@@ -19,7 +19,7 @@ import {
     Checkbox,
     Card,
     CardContent,
-    Grid,
+    Grid2 as Grid,
     Divider,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";

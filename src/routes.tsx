@@ -25,6 +25,9 @@ import GerenciarHorarios from "./pages/Ambientes/HorarioFuncionamento"
 import Notificacoes from "./pages/Notificacoes"
 import Dashboard from "./pages/Dashboard"
 import Register from "./pages/Register"
+import Blacklist from "./pages/BlackList"
+import WhiteList from "./pages/WhiteList"
+
 
 export const Rotas = () => {
 
@@ -72,6 +75,14 @@ export const Rotas = () => {
                 <Route
                     path="/reservas/:id"
                     element={<GerenciarReservas />}
+                />
+                <Route
+                    path="/calendario/blacklist"
+                    element={<Blacklist/>}
+                />
+                 <Route
+                    path="/calendario/whitelist"
+                    element={<WhiteList/>}
                 />
                 <Route
                     path="/usuarios"
