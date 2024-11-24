@@ -22,6 +22,7 @@ import { LayoutDashboard } from "../../components/LayoutDashboard"
 import { SnackbarMui } from "../../components/Snackbar"
 import { IToken } from "../../interfaces/token"
 import { GridInitialStateCommunity } from "@mui/x-data-grid/models/gridStateCommunity"
+import { set } from "immutable"
 
 interface INotificacoes {
     id: number
@@ -46,6 +47,8 @@ export default function Notificacoes() {
     const [loading, setLoading] = useState(false)
     const [dadosNotificacoes, setNotificacoes] = useState<Array<INotificacoes>>([])
     const [usuarios, setUsuarios] = useState<Map<number, string>>(new Map())
+    const [refreshKey, setRefreshKey] = useState(0);
+
 
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
@@ -89,7 +92,7 @@ export default function Notificacoes() {
                     setLoading(false)
                 })
         } else {
-            axios.get(import.meta.env.VITE_URL + '/notificacoes?id_usuario=' + token.usuario.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            axios.get(import.meta.env.VITE_URL + '/notificacoes/usuario/' + token.usuario.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     setNotificacoes(res.data)
                     setLoading(false)
@@ -99,7 +102,7 @@ export default function Notificacoes() {
                     setLoading(false)
                 })
         }
-    }, [])
+    }, [refreshKey])
 
     const handleShowSnackbar = useCallback((message: string, severity: 'success' | 'error' | 'warning' | 'info') => {
         setSnackbarVisible(true);
@@ -251,6 +254,28 @@ export default function Notificacoes() {
         },
     ]
 
+    const handleMarkAllAsRead = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await axios.put(`${import.meta.env.VITE_URL}/notificacoes/marcarTodas/${token.usuario.id}`, null, {
+                headers: {
+                    Authorization: `Bearer ${token.accessToken}`,
+                },
+            });
+
+            if (response.status === 200) {
+                setLoading(false);
+                handleShowSnackbar("Notificações marcadas como lidas !", "success");
+                setRefreshKey(refreshKey + 1);
+            } else {
+                setLoading(false);
+                handleShowSnackbar("Erro ao marcar notifica es como lidas.", "error");
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }, [token.accessToken, token.usuario.id, handleShowSnackbar]);
+
     return (
         <>
             <Loading visible={loading} />
@@ -268,14 +293,14 @@ export default function Notificacoes() {
                 <Container maxWidth="xl" sx={{ mb: 4, mt: 3 }}>
                     <Box display="flex" justifyContent="center" alignItems="center" mb={3}>
                         <Typography variant="h4" component="h1">
-                            Notificações
+                           {token.usuario.isAdmin ? "Todas as" : "Suas"} Notificações
                         </Typography>
 
                         <Button
-                            onClick={() => navigate('/notificacoes/enviar')}
+                            onClick={handleMarkAllAsRead}
                             variant="contained"
                             color="primary"
-                            sx={{ ml: 2 }}
+                            sx={{ ml: 4 }}
                         > Marcar todos como lido</Button>
 
                     </Box>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   AppBar,
@@ -30,6 +30,7 @@ import {
 import { IToken } from '../../interfaces/token';
 import EventRoundedIcon from '@mui/icons-material/EventRounded';
 import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
+import axios from 'axios';
 
 interface IProps {
   children: React.ReactNode;
@@ -44,11 +45,27 @@ export const LayoutDashboard = ({ children }: IProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [calendarMenuAnchor, setCalendarMenuAnchor] = useState<null | HTMLElement>(null);
   const location = useLocation();
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken;
 
   // Exemplo: Variável para o número de notificações
-  const notificationCount = 5; // Substitua isso pela lógica dinâmica para obter o número de notificações
+  const fetchNotificationCount = useCallback(async () => {
+    axios
+      .get(import.meta.env.VITE_URL + '/notificacoes/visualizadas/' + token.usuario.id, {
+        headers: { Authorization: `Bearer ${token.accessToken}` },
+      })
+      .then((response) => {
+        setNotificationCount(response.data.notificacao);
+      })
+      .catch((error) => {
+        console.error('fetchNotificationCount error:', error);
+      });
+  }, [token.accessToken, token.usuario.id]);
+
+  useEffect(() => {
+    fetchNotificationCount();
+  }, [fetchNotificationCount]);
 
   // Itens do menu padrão
   const menuItems = [

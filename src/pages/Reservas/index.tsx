@@ -61,7 +61,7 @@ export default function Reservas() {
     const [dadosReservas, setDadosReservas] = useState<Array<IReserva>>([])
     const [ambientes, setAmbientes] = useState<Map<number, string>>(new Map())
     const [usuarios, setUsuarios] = useState<Map<number, string>>(new Map())
-
+    const [refreshKey, setRefreshKey] = useState(0);
     const [historico, setHistorico] = useState([]);
     const [openModal, setOpenModal] = useState(false);
     const [modalAberto, setModalAberto] = useState(false);
@@ -131,7 +131,7 @@ export default function Reservas() {
                     setLoading(false)
                 })
         }
-    }, [])
+    }, [refreshKey])
 
     const abrirModal = useCallback((id: number) => {
         setIdReservaSelecionada(id);
@@ -316,7 +316,7 @@ export default function Reservas() {
             }, { headers: { Authorization: `Bearer ${token.accessToken}` } });
             fecharModal(); // Fecha o modal após o sucesso
             handleShowSnackbar("Reserva Cancelada realizado com sucesso!", "success");
-            navigate('/reservas');
+            setRefreshKey(refreshKey + 1)
         } catch (error) {
             fecharModal();
             console.error("Erro ao salvar o cancelamento:", error);
