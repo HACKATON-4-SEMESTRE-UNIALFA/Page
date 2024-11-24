@@ -64,12 +64,12 @@ export default function WhiteList() {
             });
     }, []);
 
-    const handleEditDate = (id: number, date: string) => {
+    const handleEditDate = useCallback((id: number, date: string) => {
         setSelectedId(id);
         setSelectedDate(date);
-    };
+    }, []);
 
-    const handleSaveDate = () => {
+    const handleSaveDate = useCallback(() => {
         if (!selectedId) return;
 
         setLoading(true);
@@ -89,9 +89,9 @@ export default function WhiteList() {
                 handleShowSnackbar(err.response?.data || "Erro ao atualizar a data", "error");
             })
             .finally(() => setLoading(false));
-    };
+    }, [selectedId, selectedDate, setWhitelistData, handleShowSnackbar]);
 
-    const handleDeleteDate = (id: number) => {
+    const handleDeleteDate = useCallback((id: number) => {
         setLoading(true);
 
         axios.delete(`${import.meta.env.VITE_URL}/whitelist/${id}`)
@@ -103,7 +103,7 @@ export default function WhiteList() {
                 handleShowSnackbar(err.response?.data || "Erro ao excluir a data", "error");
             })
             .finally(() => setLoading(false));
-    };
+    }, [setWhitelistData, handleShowSnackbar]);
 
     const columns: GridColDef[] = [
         {
@@ -133,7 +133,7 @@ export default function WhiteList() {
             align: 'center',
             renderCell: (params: GridRenderCellParams) => (
                 <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
-                    {params.value}
+                    {new Date(params.value).toLocaleDateString("pt-BR")}
                 </Typography>
             ),
         },

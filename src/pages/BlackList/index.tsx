@@ -63,12 +63,12 @@ export default function Blacklist() {
             });
     }, []);
 
-    const handleEditDate = (id: number, date: string) => {
+    const handleEditDate = useCallback((id: number, date: string) => {
         setSelectedId(id);
         setSelectedDate(date);
-    };
+    }, [setSelectedId, setSelectedDate]);
 
-    const handleSaveDate = () => {
+    const handleSaveDate = useCallback(() => {
         if (!selectedId) return;
 
         setLoading(true);
@@ -88,9 +88,9 @@ export default function Blacklist() {
                 handleShowSnackbar(err.response?.data || "Erro ao atualizar a data", "error");
             })
             .finally(() => setLoading(false));
-    };
+    }, [selectedId, selectedDate, setLoading, handleShowSnackbar]);
 
-    const handleDeleteDate = (id: number) => {
+    const handleDeleteDate = useCallback((id: number) => {
         setLoading(true);
 
         axios.delete(`${import.meta.env.VITE_URL}/blacklist/${id}`)
@@ -102,7 +102,7 @@ export default function Blacklist() {
                 handleShowSnackbar(err.response?.data || "Erro ao excluir a data", "error");
             })
             .finally(() => setLoading(false));
-    };
+    }, [setLoading, handleShowSnackbar]);
 
     const columns: GridColDef[] = [
         {
@@ -132,7 +132,7 @@ export default function Blacklist() {
             align: 'center',
             renderCell: (params: GridRenderCellParams) => (
                 <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
-                    {params.value}
+                    {new Date(params.value).toLocaleDateString('pt-BR')}
                 </Typography>
             ),
         },
@@ -198,9 +198,6 @@ export default function Blacklist() {
                             />
                             <Button variant="contained" color="primary" onClick={handleSaveDate}>
                                 Salvar
-                            </Button>
-                            <Button variant="outlined" color="secondary" onClick={() => setSelectedId(null)}>
-                                Bloquear
                             </Button>
                         </Box>
                     )}

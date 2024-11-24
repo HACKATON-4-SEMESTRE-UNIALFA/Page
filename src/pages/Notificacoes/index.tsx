@@ -66,7 +66,7 @@ export default function Notificacoes() {
             axios.get(import.meta.env.VITE_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     const usuarioMap = new Map<number, string>()
-                    res.data.forEach((usuario: IUsuario) => {
+                    res.data.usuario.forEach((usuario: IUsuario) => {
                         usuarioMap.set(usuario.id, usuario.nome)
                     })
                     setUsuarios(usuarioMap)

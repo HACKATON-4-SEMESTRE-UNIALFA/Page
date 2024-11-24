@@ -77,11 +77,11 @@ export const Rotas = () => {
                     element={<GerenciarReservas />}
                 />
                 <Route
-                    path="/blacklist"
+                    path="/calendario/blacklist"
                     element={<Blacklist/>}
                 />
                  <Route
-                    path="/whitelist"
+                    path="/calendario/whitelist"
                     element={<WhiteList/>}
                 />
                 <Route
