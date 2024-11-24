@@ -159,7 +159,7 @@ export default function GerenciarAmbientes() {
             : `${import.meta.env.VITE_URL}/ambientes/`;
 
         const request = isEdit
-            ? axios.post(url, formData, config)
+            ? axios.put(url, formData, config)
             : axios.post(url, formData, config);
 
         request

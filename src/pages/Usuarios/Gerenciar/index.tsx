@@ -88,7 +88,7 @@ export default function GerenciarUsuarios() {
     const { id } = useParams();
     const [isEdit, setIsEdit] = useState<boolean>(false);
 
-    const token = JSON.parse(localStorage.getItem('casadapaz.token') || '') as IToken;
+    const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken;
 
     useEffect(() => {
         if (localStorage.length === 0 || verificaTokenExpirado()) {
@@ -121,8 +121,10 @@ export default function GerenciarUsuarios() {
     const submitForm: SubmitHandler<IForm> = useCallback((data) => {
         setLoading(true);
         const request = isEdit
-            ? axios.put(import.meta.env.VITE_API_URL + `/usuarios/${id}`, data, { headers: { Authorization: `Bearer ${token.accessToken}` } })
-            : axios.post(import.meta.env.VITE_API_URL + '/usuarios/', data, { headers: { Authorization: `Bearer ${token.accessToken}` } });
+            ? axios.put(import.meta.env.VITE_URL + `/usuarios/${id}`, data, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            : axios.post(import.meta.env.VITE_URL + '/usuarios/', data, { headers: { Authorization: `Bearer ${token.accessToken}` } });
+
+        console.log(data);
 
         request
             .then(() => {
@@ -134,7 +136,6 @@ export default function GerenciarUsuarios() {
                 );
                 setTimeout(() => { navigate('/usuarios'); }, 1500);
             })
-            
             .catch((error) => {
                 console.error(error);
                 handleShowSnackbar(error.response.data, 'error');
