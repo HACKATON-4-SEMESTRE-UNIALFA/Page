@@ -200,9 +200,6 @@ export default function WhiteList() {
                             <Button variant="contained" color="primary" onClick={handleSaveDate}>
                                 Salvar
                             </Button>
-                            <Button variant="outlined" color="secondary" onClick={() => setSelectedId(null)}>
-                                Habilitar
-                            </Button>
                         </Box>
                     )}
 
