@@ -45,7 +45,7 @@ interface IAmbiente {
     nome: string
 }
 
-interface IUsuario{
+interface IUsuario {
     id: number
     nome: string
 }
@@ -86,7 +86,7 @@ export default function Reservas() {
         axios.get(import.meta.env.VITE_URL + '/ambientes', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
                 const ambienteMap = new Map<number, string>()
-                res.data.forEach((ambiente: IAmbiente) => {
+                res.data.ambiente.forEach((ambiente: IAmbiente) => {
                     ambienteMap.set(ambiente.id, ambiente.nome)
                 })
                 setAmbientes(ambienteMap)
@@ -94,17 +94,20 @@ export default function Reservas() {
             .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"))
 
         // Busca reservas
-        if (token.user.isAdmin) {
+        if (token.usuario.isAdmin) {
             // Busca Usuarios
-            axios.get(import.meta.env.VITE_URL + '/users', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            axios.get(import.meta.env.VITE_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     const usuarioMap = new Map<number, string>()
-                    res.data.forEach((usuario: IUsuario) => {
+                    res.data.usuario.forEach((usuario: IUsuario) => {
                         usuarioMap.set(usuario.id, usuario.nome)
                     })
                     setUsuarios(usuarioMap)
                 })
-                .catch(() => handleShowSnackbar("Erro ao buscar Usuários", "error"))
+                .catch((err) => {
+                    console.error(err)
+                    handleShowSnackbar("Erro ao buscar Usuários", "error")
+                })
 
             axios.get(import.meta.env.VITE_URL + '/reservas', { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
@@ -116,7 +119,7 @@ export default function Reservas() {
                     setLoading(false)
                 })
         } else {
-            axios.get(import.meta.env.VITE_URL + '/reservas?id_usuario=' + token.user.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            axios.get(import.meta.env.VITE_URL + '/reservas?id_usuario=' + token.usuario.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     setDadosReservas(res.data)
                     setLoading(false)
@@ -150,7 +153,7 @@ export default function Reservas() {
             headerAlign: 'center',
             align: 'center'
         },
-        ...(token.user.isAdmin
+        ...(token.usuario.isAdmin
             ? [
                 {
                     field: 'id_usuario',
@@ -323,7 +326,7 @@ export default function Reservas() {
                     />
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                         <Typography variant="h4" component="h1">
-                            {token.user.isAdmin ? "Todas as Reservas" : "Minhas Reservas"}
+                            {token.usuario.isAdmin ? "Todas as Reservas" : "Minhas Reservas"}
                         </Typography>
                         <Button
                             variant="contained"

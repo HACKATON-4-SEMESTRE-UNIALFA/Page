@@ -24,6 +24,7 @@ import DropZone from "../../../components/Dropzone";
 import { Loading } from "../../../components/Loading";
 import { IToken } from "../../../interfaces/token";
 import { Stack } from "immutable";
+import { ConstructionOutlined } from "@mui/icons-material";
 
 interface IAmbientes {
     id: 0,
@@ -98,7 +99,7 @@ export default function GerenciarAmbientes() {
             setLoading(true);
             axios.get(import.meta.env.VITE_URL + `/ambientes/${ambienteId}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    const ambienteData = res.data;
+                    const ambienteData = res.data.ambiente;
                     setIsEdit(true);
                     setValue("id", ambienteData.id || 0);
                     setValue("nome", ambienteData.nome || '');
@@ -142,7 +143,6 @@ export default function GerenciarAmbientes() {
         formData.append('capacidade', data.capacidade?.toString() || '');
         formData.append('status', data.status);
         formData.append('equipamentos_disponiveis', data.equipamentos_disponiveis);
-        formData.append('descricao', data.descricao);
         if (data.imagem) {
             formData.append('imagem', data.imagem);
         }
@@ -178,6 +178,7 @@ export default function GerenciarAmbientes() {
                 });
             })
             .catch((error) => {
+                console.log(error);
                 const errorMessage = error.response?.data || 'Erro ao processar a requisição';
                 setLoading(false);
                 handleShowSnackbar(errorMessage, 'error');

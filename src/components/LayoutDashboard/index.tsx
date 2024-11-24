@@ -109,7 +109,7 @@ export const LayoutDashboard = ({ children }: IProps) => {
           </ListItem>
         ))}
         {/* Itens de Admin */}
-        {token.user.isAdmin == true &&
+        {token.usuario.isAdmin == true &&
           adminMenuItems.map((item) =>
             item.children ? (
               // Dropdown para "Calendário"

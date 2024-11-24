@@ -84,17 +84,17 @@ export default function Ambientes() {
 
         axios.get(import.meta.env.VITE_URL + '/ambientes', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
-                setDadosAmbientes(res.data)
+                setDadosAmbientes(res.data.ambiente)
                 setLoading(false)
             })
             .catch((err) => {
-                setDadosAmbientes(err)
+                setDadosAmbientes([])
                 setLoading(false)
             })
 
         axios.get(import.meta.env.VITE_URL + '/horarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
-                setDadosHorarios(res.data)
+                setDadosHorarios(res.data.horarios)
                 setLoading(false)
             })
             .catch((err) => {
@@ -167,7 +167,7 @@ export default function Ambientes() {
                             >
                                 Reservar
                             </Button>
-                            {token.user?.isAdmin == true &&
+                            {token.usuario?.isAdmin == true &&
                                 <Button
                                     variant="contained"
                                     color="success"
@@ -181,120 +181,131 @@ export default function Ambientes() {
                     </Box>
 
                     <Grid container spacing={3}>
-                        {dadosAmbientes.map((ambiente) => {
-                            // Filtrando e ordenando horários
-                            const horariosAmbiente = dadosHorarios
-                                .filter((horario) => horario.id_ambiente == ambiente.id)
-                                .sort((a, b) => {
-                                    const inicioA = a.horario.split('-')[0];
-                                    const inicioB = b.horario.split('-')[0];
-                                    return inicioA.localeCompare(inicioB);
-                                });
+                        {dadosAmbientes.length == 0 ? (
+                            <Typography variant="body1" component="p" align="center" mt={5}>
+                                Nenhum ambiente cadastrado
+                            </Typography>
+                        ) : (
+                            dadosAmbientes.map((ambiente) => {
+                                let horariosAmbiente = [] as Array<IHorarioFuncionamento>
 
-                            return (
-                                <Grid size={{ md: 4, sm: 6, xs: 12 }} key={ambiente.id}>
-                                    <Card
-                                        sx={{
-                                            height: '100%',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            transition: '0.3s',
-                                            '&:hover': {
-                                                transform: 'translateY(-4px)',
-                                                boxShadow: 4,
-                                            },
-                                        }}
-                                    >
-                                        <CardMedia
-                                            component="img"
-                                            alt={`Imagem do ambiente ${ambiente.nome}`}
-                                            height="150"
-                                            image="https://material-ui.com/static/images/cards/contemplative-reptile.jpg"
-                                        />
-                                        <CardContent sx={{ flexGrow: 1 }}>
-                                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                                                <Typography variant="h6" component="h2" sx={{ color: 'text.primary' }}>
-                                                    {ambiente.nome}
+                                if (dadosHorarios.length > 0) {
+                                    horariosAmbiente = dadosHorarios
+                                        .filter((horario) => horario.id_ambiente == ambiente.id)
+                                        .sort((a, b) => {
+                                            const inicioA = a.horario.split('-')[0];
+                                            const inicioB = b.horario.split('-')[0];
+                                            return inicioA.localeCompare(inicioB);
+                                        });
+                                }
+
+                                return (
+                                    <Grid size={{ md: 4, sm: 6, xs: 12 }} key={ambiente.id}>
+                                        <Card
+                                            sx={{
+                                                height: '100%',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                transition: '0.3s',
+                                                '&:hover': {
+                                                    transform: 'translateY(-4px)',
+                                                    boxShadow: 4,
+                                                },
+                                            }}
+                                        >
+                                            <CardMedia
+                                                component="img"
+                                                alt={`Imagem do ambiente ${ambiente.nome}`}
+                                                height="150"
+                                                image="https://material-ui.com/static/images/cards/contemplative-reptile.jpg"
+                                            />
+                                            <CardContent sx={{ flexGrow: 1 }}>
+                                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                                                    <Typography variant="h6" component="h2" sx={{ color: 'text.primary' }}>
+                                                        {ambiente.nome}
+                                                    </Typography>
+                                                    <Chip
+                                                        label={ambiente.status}
+                                                        color={ambiente.status === 'Disponível' ? 'success' : 'warning'}
+                                                    />
+                                                </Box>
+
+                                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                    {ambiente.descricao}
                                                 </Typography>
-                                                <Chip
-                                                    label={ambiente.status}
-                                                    color={ambiente.status === 'Disponível' ? 'success' : 'warning'}
-                                                />
-                                            </Box>
+                                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                    Capacidade: {ambiente.capacidade}
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                    Equipamentos Disponíveis: {ambiente.equipamentos_disponiveis}
+                                                </Typography>
 
-                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                                {ambiente.descricao}
-                                            </Typography>
-                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                                Capacidade: {ambiente.capacidade}
-                                            </Typography>
-                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                                Equipamentos Disponíveis: {ambiente.equipamentos_disponiveis}
-                                            </Typography>
-
-                                            <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 'bold' }}>
-                                                Horários de Funcionamento:
-                                            </Typography>
-                                            {horariosAmbiente.length > 0 ? (
-                                                <Box
-                                                    display="flex"
-                                                    gap={1}
-                                                    flexWrap="wrap"
-                                                    mt={1}
+                                                <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 'bold' }}>
+                                                    Horários de Funcionamento:
+                                                </Typography>
+                                                {horariosAmbiente.length > 0 ? (
+                                                    <Box
+                                                        display="flex"
+                                                        gap={1}
+                                                        flexWrap="wrap"
+                                                        mt={1}
+                                                        sx={{
+                                                            justifyContent: 'center',
+                                                            '& > div': {
+                                                                border: '1.5px solid',
+                                                                borderColor: 'grey.400',
+                                                                borderRadius: '4px',
+                                                                padding: '2px 6px',
+                                                                fontSize: '0.875rem',
+                                                                color: 'text.primary',
+                                                                transition: 'background-color 0.3s',
+                                                            },
+                                                        }}
+                                                    >
+                                                        {horariosAmbiente.map((horario) => (
+                                                            <Box key={horario.id}>{horario.horario}</Box>
+                                                        ))}
+                                                    </Box>
+                                                ) : (
+                                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                                        Nenhum horário disponível.
+                                                    </Typography>
+                                                )}
+                                            </CardContent>
+                                            {token.usuario?.isAdmin == true && (
+                                                <CardActions
                                                     sx={{
+                                                        display: 'flex',
                                                         justifyContent: 'center',
-                                                        '& > div': {
-                                                            border: '1.5px solid',
-                                                            borderColor: 'grey.400',
-                                                            borderRadius: '4px',
-                                                            padding: '2px 6px',
-                                                            fontSize: '0.875rem', 
-                                                            color: 'text.primary', 
-                                                            transition: 'background-color 0.3s',
-                                                        },
+                                                        mt: 'auto',
                                                     }}
                                                 >
-                                                    {horariosAmbiente.map((horario) => (
-                                                        <Box key={horario.id}>{horario.horario}</Box>
-                                                    ))}
-                                                </Box>
-                                            ) : (
-                                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                                    Nenhum horário disponível.
-                                                </Typography>
+                                                    <Button
+                                                        color="primary"
+                                                        size="large"
+                                                        onClick={() => navigate(`/ambientes/${ambiente.id}`)}
+                                                    >
+                                                        Editar
+                                                    </Button>
+                                                    <Button
+                                                        color="error"
+                                                        size="large"
+                                                        onClick={() => removeAmbiente(ambiente.id)}
+                                                    >
+                                                        Excluir
+                                                    </Button>
+                                                </CardActions>
                                             )}
-                                        </CardContent>
-                                        {token.user?.isAdmin == true && (
-                                            <CardActions
-                                                sx={{
-                                                    display: 'flex',
-                                                    justifyContent: 'center',
-                                                    mt: 'auto',
-                                                }}
-                                            >
-                                                <Button
-                                                    color="primary"
-                                                    size="large"
-                                                    onClick={() => navigate(`/ambientes/${ambiente.id}`)}
-                                                >
-                                                    Editar
-                                                </Button>
-                                                <Button
-                                                    color="error"
-                                                    size="large"
-                                                    onClick={() => removeAmbiente(ambiente.id)}
-                                                >
-                                                    Excluir
-                                                </Button>
-                                            </CardActions>
-                                        )}
-                                    </Card>
-                                </Grid>
-                            );
-                        })}
+                                        </Card>
+                                    </Grid>
+                                );
+                            })
+                        )}
                     </Grid>
+
                 </Container>
             </LayoutDashboard >
         </>
     )
 }
+

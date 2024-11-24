@@ -30,6 +30,7 @@ import DropZone from "../../../components/Dropzone";
 import { Loading } from "../../../components/Loading";
 import { IToken } from "../../../interfaces/token";
 import { ptBR } from '@mui/x-date-pickers/locales';
+import { get } from "immutable";
 
 interface IReserva {
     id: number
@@ -42,6 +43,12 @@ interface IReserva {
 interface IAmbiente {
     id: number
     nome: string
+}
+
+interface IHorarioResponse {
+    id: number;
+    id_ambiente: number;
+    horariosDisponiveis: any;
 }
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -79,6 +86,7 @@ export default function GerenciarReservas() {
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [disableDates, setDisableDates] = useState<string[]>([]);
 
 
 
@@ -105,7 +113,7 @@ export default function GerenciarReservas() {
         // Busca ambientes
         axios.get(import.meta.env.VITE_URL + '/ambientes?status=Disponível', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
-                setAmbientes(res.data);
+                setAmbientes(res.data.ambiente);
             })
             .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"))
 
@@ -132,89 +140,65 @@ export default function GerenciarReservas() {
         }
     }, [id, navigate, setValue]);
 
-    const getDisabledDates = useCallback(() => {
+    const getDisabledDates = useCallback((diasBloqueados: string[] = []) => {
         const today = dayjs();
         const disabledDates: string[] = [];
+        
+        // Adiciona os finais de semana (sábados e domingos)
         for (let i = 0; i < 31; i++) {
             const date = today.add(i, 'day');
             if (date.day() === 0 || date.day() === 6) {
                 disabledDates.push(date.format('YYYY-MM-DD'));
             }
         }
-        return disabledDates;
-    }, []);
+        
+        // Combina as datas dos finais de semana com as datas bloqueadas da API
+        const allDisabledDates = [...new Set([...disabledDates, ...diasBloqueados])]; // Remove duplicatas
+        setDisableDates(allDisabledDates);
+    }, [setDisableDates]);
+
+    const handleAmbienteChange = useCallback((id: any) => {
+        setLoading(true);
+        if (!id) {
+            return setLoading(false);
+        }
+        
+        // Realiza a requisição para buscar os dias bloqueados do ambiente
+        axios.get(import.meta.env.VITE_URL + `/verificaReservaDia/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            .then((res) => {
+                // Supondo que 'res.data.horario' seja um array de datas bloqueadas
+                const diasBloqueados = res.data.diasOcupados || [];
+    
+                // Combine as datas bloqueadas do ambiente com as datas dos finais de semana
+                getDisabledDates(diasBloqueados); // Passa as datas bloqueadas para a função de gerar finais de semana
+                setLoading(false);
+            })
+            .catch((err) => {
+                console.log(err);
+                setLoading(false);
+            });
+    }, [setDisableDates, getDisabledDates]);
 
     function submitForm(data: IReserva, event?: BaseSyntheticEvent<object, any, any> | undefined): unknown {
         throw new Error("Function not implemented.");
     }
 
-    /*const submitForm: SubmitHandler<IReserva> = useCallback((data) => {
-        setLoading(true);
-
-        const formData = new FormData();
-        formData.append('id', data.id?.toString() || '');
-        formData.append('nome', data.nome);
-        formData.append('categoria', data.categoria);
-        formData.append('data_recebimento', data.data_recebimento);
-        formData.append('imagem', data.imagem || '');
-
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                authorization: `Bearer ${token.accessToken}`,
-            }
-        };
-
-        const url = isEdit
-            ? `${import.meta.env.VITE_URL}/premios/${id}`
-            : `${import.meta.env.VITE_URL}/premios/`;
-
-        const request = isEdit
-            ? axios.post(url, formData, config)
-            : axios.post(url, formData, config);
-
-        request
-            .then((response) => {
-                handleShowSnackbar(
-                    isEdit
-                        ? 'Prêmio editado com sucesso!'
-                        : 'Prêmio adicionado com sucesso!',
-                    'success'
-                );
-                setLoading(false);
-                setTimeout(() => { navigate('/premios'); }, 1500);
-            })
-            .catch((error) => {
-                const errorMessage = error.response?.data || 'Erro ao processar a requisição';
-                setLoading(false);
-                handleShowSnackbar(errorMessage, 'error');
-            });
-    }, [isEdit, id, navigate]);*/
-
-    const fetchAvailableTimes = async (date) => {
+    const fetchAvailableTimes = useCallback(async (date: any) => {
         setLoading(true);
         setError(null);
-        try {
-            // Simulando uma chamada à API
-            await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // Simulando horários disponíveis - substitua pela sua chamada real à API
-            const mockTimes = [
-                '09:00-10:00',
-                '10:00-11:00',
-                '11:00-11:59',
-                '14:00-14:59',
-                '15:00-15:59',
-                '16:00-16:59'
-            ];
-            http://api/horariosdisponiveis/idAmbiente/2023-06-01
-            setAvailableTimes(mockTimes);
+        const idAmbiente = getValues('id_ambiente');
+        try {
+            const response = await axios.get(import.meta.env.VITE_URL + `/verificaReservaHorario/${idAmbiente}/${date}`, { headers: { Authorization: `Bearer ${token.accessToken}` } });
+
+            const data = response.data as IHorarioResponse;
+            setAvailableTimes([...(Array.isArray(data.horariosDisponiveis) ? data.horariosDisponiveis : [data.horariosDisponiveis])]);
         } catch (err) {
             console.error('Erro ao buscar horários disponíveis:', err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [getValues]);
 
     // Fun o para lidar com a sele o de uma data
     const handleDateChange = useCallback(
@@ -227,45 +211,6 @@ export default function GerenciarReservas() {
         },
         [fetchAvailableTimes, setSelectedDate, setSelectedTime]
     );
-
-    const disabledDates = [
-        // Feriados nacionais
-        new Date('2024-01-01'), // Ano Novo
-        new Date('2024-04-21'), // Tiradentes
-        new Date('2024-05-01'), // Dia do Trabalho
-        new Date('2024-09-07'), // Independência do Brasil
-        new Date('2024-10-12'), // Nossa Senhora Aparecida
-        new Date('2024-11-02'), // Finados
-        new Date('2024-11-15'), // Proclamação da República
-        new Date('2024-12-25'), // Natal
-
-        // Feriados facultativos
-        new Date('2024-02-12'), // Carnaval
-        new Date('2024-02-13'), // Carnaval
-        new Date('2024-02-14'), // Quarta-feira de Cinzas
-
-        // Datas específicas de exemplo
-        new Date('2024-07-20'), // Data de exemplo
-        new Date('2024-08-15'), // Outra data de exemplo
-
-        // Exemplo de intervalo de férias
-        new Date('2024-12-20'),
-        new Date('2024-12-21'),
-        new Date('2024-12-22'),
-        new Date('2024-12-23'),
-        new Date('2024-12-24'),
-        new Date('2024-12-25'),
-        new Date('2024-12-26'),
-        new Date('2024-12-27'),
-        new Date('2024-12-28'),
-        new Date('2024-12-29'),
-        new Date('2024-12-30'),
-        new Date('2024-12-31')
-    ];
-
-
-
-
 
     return (
         <>
@@ -294,9 +239,20 @@ export default function GerenciarReservas() {
                                 control={control}
                                 rules={{ required: 'Ambiente é obrigatório!' }}
                                 render={({ field }) => (
-                                    <FormControl fullWidth error={!!errors.id_ambiente} sx={{ mb: 2 }}>
+                                    <FormControl
+                                        fullWidth
+                                        error={!!errors.id_ambiente}
+                                        sx={{ mb: 2 }}
+                                    >
                                         <InputLabel>Ambientes Disponíveis</InputLabel>
-                                        <Select {...field} label="Ambientes Disponíveis">
+                                        <Select
+                                            {...field}
+                                            label="Ambientes Disponíveis"
+                                            onChange={(e) => {
+                                                field.onChange(e); // Atualiza o valor no formulário
+                                                handleAmbienteChange(e.target.value); // Chama a função para atualizar a lógica de ambientes
+                                            }}
+                                        >
                                             <MenuItem value="">Selecione o Ambiente</MenuItem>
                                             {ambientes.map((ambiente) => (
                                                 <MenuItem key={ambiente.id} value={ambiente.id}>{ambiente.nome}</MenuItem>
@@ -337,9 +293,7 @@ export default function GerenciarReservas() {
                                                 handleDateChange(date);
                                             }}
                                             shouldDisableDate={(date: Dayjs) => {
-                                                const disabledDates = getDisabledDates();
-
-                                                return disabledDates.includes(date.format('YYYY-MM-DD'));
+                                                return disableDates.includes(date.format('YYYY-MM-DD'));
                                             }}
                                         />
                                     )}
@@ -361,11 +315,9 @@ export default function GerenciarReservas() {
                                         {availableTimes.length > 0 && (
                                             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2, justifyContent: 'center', maxWidth: '70%' }}>
-                                                    {availableTimes.map((time) => (
-                                                        <Grid key={time} size={{ xs: 6, sm: 6, md: 3 }}>
+                                                    {availableTimes.map((time, index) => (
+                                                        <Grid key={`${time}-${index}`} size={{ xs: 6, sm: 6, md: 3 }}>
                                                             <Button
-                                                                key={time}
-                                                                size="large"
                                                                 variant={field.value === time ? 'contained' : 'outlined'}
                                                                 color={field.value === time ? 'primary' : 'info'}
                                                                 onClick={() => field.onChange(time)}
@@ -404,3 +356,4 @@ export default function GerenciarReservas() {
         </>
     );
 }
+

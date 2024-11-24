@@ -66,7 +66,7 @@ export default function Dashboard() {
         setLoading(true);
 
         axios
-            .get(import.meta.env.VITE_URL + "/users", {
+            .get(import.meta.env.VITE_URL + "/usuarios", {
                 headers: { Authorization: `Bearer ${token.accessToken}` },
             })
             .then((res) => {
