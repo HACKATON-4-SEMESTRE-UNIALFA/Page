@@ -60,7 +60,7 @@ export default function Register() {
 
             console.log('Dados enviados:', cleanData);
 
-            await axios.post(`${import.meta.env.VITE_URL}/usuarios`, cleanData);
+            await axios.post(`${import.meta.env.VITE_API_URL}/usuarios`, cleanData);
 
             handleShowSnackbar('Registro efetuado com sucesso!', 'success');
             setTimeout(() => {
