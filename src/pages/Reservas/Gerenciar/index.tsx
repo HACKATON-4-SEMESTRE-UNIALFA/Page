@@ -4,6 +4,7 @@ import { verificaTokenExpirado } from "../../../services/token";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import 'dayjs/locale/pt-br';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from "axios";
@@ -21,6 +22,7 @@ import {
     Typography,
     Paper,
     Divider,
+    Stack,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
@@ -30,7 +32,7 @@ import DropZone from "../../../components/Dropzone";
 import { Loading } from "../../../components/Loading";
 import { IToken } from "../../../interfaces/token";
 import { ptBR } from '@mui/x-date-pickers/locales';
-import { get } from "immutable";
+import { get, is } from "immutable";
 
 interface IReserva {
     id: number
@@ -46,9 +48,9 @@ interface IAmbiente {
 }
 
 interface IHorarioResponse {
-    id: number;
-    id_ambiente: number;
-    horariosDisponiveis: any;
+    data: string;
+    horariosDisponiveis: { [key: string]: string };
+    nomeAmbiente: string;
 }
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -122,7 +124,7 @@ export default function GerenciarReservas() {
             setLoading(true);
             axios.get(import.meta.env.VITE_URL + `/reservas/${reservaId}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    const reservaData = res.data;
+                    const reservaData = res.data.reserva;
                     setIsEdit(true);
                     setValue("id", reservaData.id || 0);
                     setValue("id_ambiente", reservaData.id_ambiente || '');
@@ -143,7 +145,7 @@ export default function GerenciarReservas() {
     const getDisabledDates = useCallback((diasBloqueados: string[] = []) => {
         const today = dayjs();
         const disabledDates: string[] = [];
-        
+
         // Adiciona os finais de semana (sábados e domingos)
         for (let i = 0; i < 31; i++) {
             const date = today.add(i, 'day');
@@ -151,7 +153,7 @@ export default function GerenciarReservas() {
                 disabledDates.push(date.format('YYYY-MM-DD'));
             }
         }
-        
+
         // Combina as datas dos finais de semana com as datas bloqueadas da API
         const allDisabledDates = [...new Set([...disabledDates, ...diasBloqueados])]; // Remove duplicatas
         setDisableDates(allDisabledDates);
@@ -162,13 +164,13 @@ export default function GerenciarReservas() {
         if (!id) {
             return setLoading(false);
         }
-        
+
         // Realiza a requisição para buscar os dias bloqueados do ambiente
         axios.get(import.meta.env.VITE_URL + `/verificaReservaDia/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
                 // Supondo que 'res.data.horario' seja um array de datas bloqueadas
                 const diasBloqueados = res.data.diasOcupados || [];
-    
+
                 // Combine as datas bloqueadas do ambiente com as datas dos finais de semana
                 getDisabledDates(diasBloqueados); // Passa as datas bloqueadas para a função de gerar finais de semana
                 setLoading(false);
@@ -179,26 +181,76 @@ export default function GerenciarReservas() {
             });
     }, [setDisableDates, getDisabledDates]);
 
-    function submitForm(data: IReserva, event?: BaseSyntheticEvent<object, any, any> | undefined): unknown {
-        throw new Error("Function not implemented.");
+    function submitForm(data: IReserva): void {
+        setLoading(true);
+        console.log(data)
+        // Configurar a URL e o método da requisição
+        const url = isEdit
+            ? `${import.meta.env.VITE_URL}/reservas/${data.id}`
+            : `${import.meta.env.VITE_URL}/reservas`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        // Montar os dados para a requisição
+        const requestData = isEdit
+            ? {
+                id_ambiente: data.id_ambiente,
+                horario: data.horario,
+                data: dayjs(data.data).format('YYYY-MM-DD'),
+                id_alteracao: token.usuario.id, // ID do usuário atual
+            }
+            : {
+                id_usuario: token.usuario.id, // ID do usuário atual criando a reserva
+                id_ambiente: data.id_ambiente,
+                horario: data.horario,
+                data: dayjs(data.data).format('YYYY-MM-DD'),
+            };
+
+        // Fazer a requisição
+        axios({
+            method,
+            url,
+            headers: { Authorization: `Bearer ${token.accessToken}` },
+            data: requestData,
+        })
+            .then((response) => {
+                handleShowSnackbar(isEdit ? 'Reserva atualizada com sucesso!' : 'Reserva criada com sucesso!', 'success');
+                navigate('/reservas'); // Redireciona para a lista de reservas
+            })
+            .catch((error) => {
+                console.error('Erro ao processar a requisição:', error);
+                const errorMsg = error.response?.data?.message || 'Ocorreu um erro ao salvar os dados.';
+                handleShowSnackbar(errorMsg, 'error');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }
 
-    const fetchAvailableTimes = useCallback(async (date: any) => {
+    const fetchAvailableTimes = useCallback(async (date: string) => {
         setLoading(true);
         setError(null);
 
         const idAmbiente = getValues('id_ambiente');
-        try {
-            const response = await axios.get(import.meta.env.VITE_URL + `/verificaReservaHorario/${idAmbiente}/${date}`, { headers: { Authorization: `Bearer ${token.accessToken}` } });
 
-            const data = response.data as IHorarioResponse;
-            setAvailableTimes([...(Array.isArray(data.horariosDisponiveis) ? data.horariosDisponiveis : [data.horariosDisponiveis])]);
+        try {
+            const response = await axios.get<IHorarioResponse>(
+                `${import.meta.env.VITE_URL}/verificaReservaHorario/${idAmbiente}/${date}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`
+                    }
+                }
+            );
+            const horariosArray = Object.values(response.data.horariosDisponiveis);
+            setAvailableTimes(horariosArray);
+
         } catch (err) {
             console.error('Erro ao buscar horários disponíveis:', err);
+            setError('Erro ao carregar horários disponíveis');
         } finally {
             setLoading(false);
         }
-    }, [getValues]);
+    }, [getValues, token.accessToken]);
 
     // Fun o para lidar com a sele o de uma data
     const handleDateChange = useCallback(
@@ -300,6 +352,56 @@ export default function GerenciarReservas() {
                                 />
                             </LocalizationProvider>
 
+                            {isEdit && (
+                                <Box sx={{ mb: 5, justifyContent: 'center', display: 'flex' }}>
+                                    <Paper
+                                        elevation={0}
+                                        sx={{
+                                            px: 3,
+                                            py: 1.5,
+                                            backgroundColor: 'primary.main',
+                                            borderRadius: 2
+                                        }}
+                                    >
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            alignItems="center"
+                                        >
+                                            <AccessTimeIcon
+                                                sx={{
+                                                    color: 'white',
+                                                    fontSize: '1.5rem'
+                                                }}
+                                            />
+                                            <Typography
+                                                variant="h6"
+                                                sx={{
+                                                    color: 'white',
+                                                    fontWeight: 500,
+                                                    lineHeight: 1
+                                                }}
+                                            >
+                                                {selectedTime ? (
+                                                    <>
+                                                        Horário Atual:&nbsp;
+                                                        <Box
+                                                            component="span"
+                                                            sx={{
+                                                                fontWeight: 600,
+                                                                color: 'white'
+                                                            }}
+                                                        >
+                                                            {selectedTime}
+                                                        </Box>
+                                                    </>
+                                                ) : ''}
+                                            </Typography>
+                                        </Stack>
+                                    </Paper>
+                                </Box>
+                            )}
+
                             <Divider sx={{ mt: 0, mb: 2, color: 'black' }} >
                                 <Typography variant="h5" gutterBottom sx={{ textAlign: 'center' }}>
                                     {availableTimes.length > 0 ? 'Horários disponíveis' : ''}
@@ -315,18 +417,26 @@ export default function GerenciarReservas() {
                                         {availableTimes.length > 0 && (
                                             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2, justifyContent: 'center', maxWidth: '70%' }}>
-                                                    {availableTimes.map((time, index) => (
-                                                        <Grid key={`${time}-${index}`} size={{ xs: 6, sm: 6, md: 3 }}>
-                                                            <Button
-                                                                variant={field.value === time ? 'contained' : 'outlined'}
-                                                                color={field.value === time ? 'primary' : 'info'}
-                                                                onClick={() => field.onChange(time)}
-                                                                fullWidth
-                                                            >
-                                                                {time}
-                                                            </Button>
-                                                        </Grid>
-                                                    ))}
+                                                    <Grid container spacing={2} justifyContent="center">
+                                                        {availableTimes.map((time, index) => (
+                                                            <Grid size={{ xs: 6, sm: 6, md: 4 }} key={`${time}-${index}`}>
+                                                                <Button
+                                                                    variant="outlined"
+                                                                    sx={{
+                                                                        backgroundColor: field.value === time ? 'primary.main' : 'transparent',
+                                                                        color: field.value === time ? 'common.white' : 'primary.main',
+                                                                        '&:hover': {
+                                                                            backgroundColor: field.value === time ? 'primary.dark' : 'rgba(0, 0, 0, 0.04)'
+                                                                        }
+                                                                    }}
+                                                                    onClick={() => field.onChange(time)}
+                                                                    fullWidth
+                                                                >
+                                                                    {time}
+                                                                </Button>
+                                                            </Grid>
+                                                        ))}
+                                                    </Grid>
                                                 </Box>
                                             </Box>
                                         )}
@@ -339,16 +449,27 @@ export default function GerenciarReservas() {
                                 )}
                             />
 
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                fullWidth
-                                size="large"
-                                sx={{ mt: 2 }}
-                            >
-                                Salvar
-                            </Button>
+                            <Box sx={{ display: { xs: 'block', md: 'flex' }, justifyContent: 'center', gap: 2, mt: 2 }}>
+                                <Button
+                                    type="button"
+                                    variant="outlined"
+                                    color="secondary"
+                                    size="large"
+                                    onClick={() => navigate('/reservas')}
+                                    sx={{ mt: 1, mb: 1, width: { xs: '100%', md: '50%' } }}
+                                >
+                                    Voltar
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    size="large"
+                                    sx={{ mt: 1, mb: 1, width: { xs: '100%', md: '50%' } }}
+                                >
+                                    Salvar
+                                </Button>
+                            </Box>
                         </Box>
                     </StyledPaper>
                 </Container>
@@ -356,4 +477,5 @@ export default function GerenciarReservas() {
         </>
     );
 }
+
 

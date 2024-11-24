@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { verificaTokenExpirado } from "../../../services/token";
 import { Controller, set, SubmitHandler, useForm } from "react-hook-form";
+import { useLocation } from 'react-router-dom';
+
 import axios from "axios";
 
 import {
@@ -110,6 +112,7 @@ export default function GerenciarHorarios() {
     const [isEdit, setIsEdit] = useState<boolean>(false);
 
     const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken;
+    const location = useLocation();
 
     const handleSelectAllHorarios = (checked: boolean) => {
         setSelectAllHorarios(checked);
@@ -134,6 +137,12 @@ export default function GerenciarHorarios() {
             return;
         }
 
+        if (location.state?.snackbarMessage) {
+            setMessage(location.state.snackbarMessage);
+            setSeverity(location.state.snackbarSeverity);
+            setSnackbarVisible(true);
+        }
+
         const ambienteId = Number(id);
         if (!isNaN(ambienteId)) {
             // Busca ambientes
@@ -153,7 +162,7 @@ export default function GerenciarHorarios() {
                     }, 1500);
                 })
 
-            axios.get(import.meta.env.VITE_URL + `/horarios?id_ambiente=${ambienteId}`, {
+            axios.get(import.meta.env.VITE_URL + `/horarios/ambiente/${ambienteId}`, {
                 headers: { Authorization: `Bearer ${token.accessToken}` }
             })
                 .then((res) => {

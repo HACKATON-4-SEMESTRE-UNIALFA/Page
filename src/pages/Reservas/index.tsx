@@ -286,12 +286,12 @@ export default function Reservas() {
         }
     }, []);
 
-    const salvarCancelamento = useCallback(async (motivo: string) => {
+    const salvarCancelamento = useCallback(async (mensagem: string) => {
         if (!idReservaSelecionada) return;
 
         try {
-            await axios.post(`/reservas/desativa/${idReservaSelecionada}`, {
-                motivo
+            await axios.post(`/reservas/desativa/${idReservaSelecionada}/usuario/${token.usuario.id}`, {
+                mensagem
             }, { headers: { Authorization: `Bearer ${token.accessToken}` } });
             fecharModal(); // Fecha o modal após o sucesso
             handleShowSnackbar("Reserva Cancelada realizado com sucesso!", "success");

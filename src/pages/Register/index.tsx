@@ -5,7 +5,7 @@ import {
     Button,
     Typography,
     Box,
-    Grid,
+    Grid2 as Grid,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
@@ -46,11 +46,9 @@ export default function Register() {
     const onSubmit = useCallback(async (data: IRegister) => {
         setLoading(true);
         try {
-            // Remover caracteres especiais do CPF e telefone
             const cleanCpf = data.cpf.replace(/\D/g, ''); // Remove tudo que não é número
             const cleanTelefone = data.telefone.replace(/\D/g, ''); // Remove tudo que não é número
 
-            // Atualizar os dados com os valores limpos
             const cleanData = {
                 ...data,
                 cpf: cleanCpf,
@@ -60,7 +58,7 @@ export default function Register() {
 
             console.log('Dados enviados:', cleanData);
 
-            await axios.post(`${import.meta.env.VITE_API_URL}/usuarios`, cleanData);
+            await axios.post(`${import.meta.env.VITE_URL}/usuarios`, cleanData);
 
             handleShowSnackbar('Registro efetuado com sucesso!', 'success');
             setTimeout(() => {
@@ -73,6 +71,12 @@ export default function Register() {
         }
     }, [navigate]);
 
+    // Função para bloquear a digitação de letras e caracteres especiais
+    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+        }
+    };
 
     return (
         <>
@@ -118,7 +122,7 @@ export default function Register() {
                             component="h1"
                             sx={{ mb: 2, textAlign: 'center' }}
                         >
-                            Registro
+                            Registre-se
                         </Typography>
 
                         <TextField
@@ -145,7 +149,7 @@ export default function Register() {
                             sx={{ mb: 2 }}
                             error={!!errors.email}
                             helperText={errors.email?.message || ''}
-                            autoComplete="off" // Adicionei autoComplete="off" para evitar o preenchimento automático
+                            autoComplete="off"
                         />
 
                         <TextField
@@ -157,7 +161,7 @@ export default function Register() {
                             sx={{ mb: 2 }}
                             error={!!errors.password}
                             helperText={errors.password?.message || ''}
-                            autoComplete="off" // Adicionei autoComplete="off" para evitar o preenchimento automático
+                            autoComplete="off"
                         />
 
                         <TextField
@@ -173,16 +177,15 @@ export default function Register() {
                             sx={{ mb: 2 }}
                             error={!!errors.confirmaSenha}
                             helperText={errors.confirmaSenha?.message || ''}
-                            autoComplete="off" // Adicionei autoComplete="off" para evitar o preenchimento automático
+                            autoComplete="off"
                         />
 
+                        {/* CPF */}
                         <TextField
                             {...register('cpf', {
                                 required: 'Por favor, digite seu CPF',
-                                pattern: {
-                                    value: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
-                                    message: 'CPF inválido (formato: XXX.XXX.XXX-XX)',
-                                },
+                                maxLength: 11,
+                                validate: (value) => value.length === 11 || 'CPF deve ter 11 dígitos',
                             })}
                             label="CPF"
                             size="small"
@@ -190,15 +193,18 @@ export default function Register() {
                             sx={{ mb: 2 }}
                             error={!!errors.cpf}
                             helperText={errors.cpf?.message || ''}
+                            inputProps={{
+                                maxLength: 11,
+                            }}
+                            onKeyPress={handleKeyPress} // Bloquear letras e caracteres
                         />
 
+                        {/* Telefone */}
                         <TextField
                             {...register('telefone', {
                                 required: 'Por favor, digite seu telefone',
-                                pattern: {
-                                    value: /^\(\d{2}\)\s\d{4,5}-\d{4}$/,
-                                    message: 'Telefone inválido (formato: (XX) XXXXX-XXXX)',
-                                },
+                                maxLength: 11,
+                                validate: (value) => value.length === 11 || 'Telefone deve ter 11 dígitos',
                             })}
                             label="Telefone"
                             size="small"
@@ -206,10 +212,14 @@ export default function Register() {
                             sx={{ mb: 2 }}
                             error={!!errors.telefone}
                             helperText={errors.telefone?.message || ''}
+                            inputProps={{
+                                maxLength: 11,
+                            }}
+                            onKeyPress={handleKeyPress} // Bloquear letras e caracteres
                         />
 
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <Button
                                     type="submit"
                                     variant="contained"
@@ -220,13 +230,13 @@ export default function Register() {
                                     Registrar
                                 </Button>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <Button
                                     onClick={() => navigate('/')}
                                     variant="outlined"
                                     fullWidth
                                     size="large"
-                                    color="error" // Aqui a cor foi ajustada para vermelho
+                                    color="error"
                                 >
                                     Voltar
                                 </Button>

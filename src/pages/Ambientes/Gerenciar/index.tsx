@@ -23,7 +23,7 @@ import { SnackbarMui } from "../../../components/Snackbar";
 import DropZone from "../../../components/Dropzone";
 import { Loading } from "../../../components/Loading";
 import { IToken } from "../../../interfaces/token";
-import { Stack } from "immutable";
+import { get, Stack } from "immutable";
 import { ConstructionOutlined } from "@mui/icons-material";
 
 interface IAmbientes {
@@ -172,7 +172,7 @@ export default function GerenciarAmbientes() {
 
 
         const request = isEdit
-            ? axios.put(url, formData, config)
+            ? axios.post(url, formData, config)
             : axios.post(url, formData, config);
 
 
@@ -185,14 +185,16 @@ export default function GerenciarAmbientes() {
                     'success'
                 );
                 setLoading(false);
+                console.log(response);
                 navigate('/horarios/' + response.data.ambiente.id, {
                     state: {
-                        setAmbiente: response.data
+                        snackbarMessage: "Ambiente " + getValues("nome") + " salvo com sucesso !",
+                        snackbarSeverity: "success"
                     }
                 });
             })
             .catch((error) => {
-                console.log(error.response); // Mostra a resposta completa do servidor
+                console.log(error); // Mostra a resposta completa do servidor
                 const errorMessage = error.response?.data.message || 'Erro ao processar a requisição';
                 console.log(error.response?.data.errors); // Exibe os erros específicos de validação
                 setLoading(false);
@@ -268,9 +270,9 @@ export default function GerenciarAmbientes() {
                                         <InputLabel>Categoria</InputLabel>
                                         <Select {...field} label="Categoria">
                                             <MenuItem value="">Selecione a categoria</MenuItem>
-                                            <MenuItem value="disponível">Disponível</MenuItem>
-                                            <MenuItem value="manutenção">Manutenção</MenuItem>
-                                            <MenuItem value="indisponível">Indisponível</MenuItem>
+                                            <MenuItem value="Disponível">Disponível</MenuItem>
+                                            <MenuItem value="Manutenção">Manutenção</MenuItem>
+                                            <MenuItem value="Indisponível">Indisponível</MenuItem>
                                         </Select>
                                         {errors.status && (
                                             <FormHelperText>{errors.status.message}</FormHelperText>
