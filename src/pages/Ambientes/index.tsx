@@ -217,7 +217,7 @@ export default function Ambientes() {
                                                 component="img"
                                                 alt={`Imagem do ambiente ${ambiente.nome}`}
                                                 height="150"
-                                                image="https://material-ui.com/static/images/cards/contemplative-reptile.jpg"
+                                                image= {`http://localhost:8000/api/imagens/${ambiente.imagem}`}
                                             />
                                             <CardContent sx={{ flexGrow: 1 }}>
                                                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>

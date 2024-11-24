@@ -188,12 +188,14 @@ export default function GerenciarHorarios() {
 
         try {
             if (isEdit) {
-                // For PUT requests, we need to compare existing horarios with selected ones
+
                 const existingResponse = await axios.get(
-                    `${import.meta.env.VITE_URL}/horarios?id_ambiente=${id}`,
-                    config
+
+                    `${import.meta.env.VITE_URL}/horarios/ambiente/${id}`, config
+
                 );
-                const existingHorarios = existingResponse.data as IHorarioResponse[];
+
+                const existingHorarios = existingResponse.data.horario as IHorarioResponse[];
 
                 // Find horários to remove and add
                 const existingHorarioStrings = existingHorarios.map(h => h.horario);
@@ -202,19 +204,16 @@ export default function GerenciarHorarios() {
 
                 // Remove unselected horários
                 await Promise.all(
-                    horariosToRemove.map(horario =>
-                        axios.delete(
-                            `${import.meta.env.VITE_URL}/horarios/${horario.id}`,
-                            config
+                    horariosToRemove.map(horario => axios.delete(
+
+                            `${import.meta.env.VITE_URL}/horarios/${horario.id}`,config
                         )
                     )
                 );
 
                 // Add new horários
                 await Promise.all(
-                    horariosToAdd.map(horario =>
-                        axios.post(
-                            `${import.meta.env.VITE_URL}/horarios`,
+                    horariosToAdd.map(horario => axios.post(`${import.meta.env.VITE_URL}/horarios`,
                             {
                                 id_ambiente: data.id_ambiente,
                                 horario: horario
@@ -329,8 +328,8 @@ export default function GerenciarHorarios() {
                                             sx={{ mb: 1 }}
                                         />
                                         <StyledCard>
-                                            <CardContent sx={{padding: 0}}>
-                                                <TimeSlotGrid sx={{display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center'}}>
+                                            <CardContent sx={{ padding: 0 }}>
+                                                <TimeSlotGrid sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
                                                     {timeSlots.map((horario) => (
                                                         <FormControlLabel
                                                             key={horario}
@@ -353,28 +352,28 @@ export default function GerenciarHorarios() {
                                 )}
                             />
                             <Box sx={{ textAlign: 'center', mt: 2 }}>
-                            
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                
-                                size="large"
-                                sx={{ mt: 2, width: '45%', mr: 1 }}
-                                onClick={() => navigate(-1)}
-                            >
-                                Voltar
-                            </Button>
 
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                
-                                size="large"
-                                sx={{ mt: 2, width: '45%' }}
-                            >
-                                Salvar
-                            </Button>
+                                <Button
+                                    variant="contained"
+                                    color="secondary"
+
+                                    size="large"
+                                    sx={{ mt: 2, width: '45%', mr: 1 }}
+                                    onClick={() => navigate(-1)}
+                                >
+                                    Voltar
+                                </Button>
+
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+
+                                    size="large"
+                                    sx={{ mt: 2, width: '45%' }}
+                                >
+                                    Salvar
+                                </Button>
 
                             </Box>
                         </Box>

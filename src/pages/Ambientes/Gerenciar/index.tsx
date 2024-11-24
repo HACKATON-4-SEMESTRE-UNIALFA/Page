@@ -108,7 +108,7 @@ export default function GerenciarAmbientes() {
                     setValue("equipamentos_disponiveis", ambienteData.equipamentos_disponiveis || '');
                     setValue("descricao", ambienteData.descricao || '');
                     if (ambienteData.imagem) {
-                        setPreviewUrl(import.meta.env.VITE_URL + `/imagem/ambientes/${ambienteData.imagem}`);
+                        setPreviewUrl(import.meta.env.VITE_URL + `/imagens/${ambienteData.imagem}`);
                     }
                     setLoading(false)
                 })
@@ -138,14 +138,21 @@ export default function GerenciarAmbientes() {
         setLoading(true);
 
         const formData = new FormData();
-        formData.append('id', data.id?.toString() || '');
-        formData.append('nome', data.nome);
+        formData.append('nome', data.nome?.toString() || '');
         formData.append('capacidade', data.capacidade?.toString() || '');
-        formData.append('status', data.status);
-        formData.append('equipamentos_disponiveis', data.equipamentos_disponiveis);
+        formData.append('status', data.status?.toString() || '');
+        formData.append('equipamentos_disponiveis', data.equipamentos_disponiveis?.toString() || '');
         if (data.imagem) {
             formData.append('imagem', data.imagem);
         }
+
+        if (data.imagem) {
+            console.log('Nome da imagem:', data.imagem.name);
+            console.log('Tipo da imagem:', data.imagem.type);
+            console.log('Tamanho da imagem:', data.imagem.size);
+        }
+
+        console.log(formData)
 
         const config = {
             headers: {
@@ -154,13 +161,20 @@ export default function GerenciarAmbientes() {
             }
         };
 
+        for (const pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+
         const url = isEdit
             ? `${import.meta.env.VITE_URL}/ambientes/${id}`
             : `${import.meta.env.VITE_URL}/ambientes/`;
 
+
+
         const request = isEdit
             ? axios.post(url, formData, config)
             : axios.post(url, formData, config);
+
 
         request
             .then((response) => {
@@ -178,11 +192,13 @@ export default function GerenciarAmbientes() {
                 });
             })
             .catch((error) => {
-                console.log(error);
-                const errorMessage = error.response?.data || 'Erro ao processar a requisição';
+                console.log(error.response); // Mostra a resposta completa do servidor
+                const errorMessage = error.response?.data.message || 'Erro ao processar a requisição';
+                console.log(error.response?.data.errors); // Exibe os erros específicos de validação
                 setLoading(false);
                 handleShowSnackbar(errorMessage, 'error');
             });
+
     }, [isEdit, id, navigate]);
 
 
@@ -285,7 +301,6 @@ export default function GerenciarAmbientes() {
                             <Controller
                                 name="imagem"
                                 control={control}
-                                rules={{ required: 'Imagem é obrigatória!' }}
                                 render={({ field: { onChange } }) => (
                                     <DropZone
                                         previewUrl={previewUrl}
