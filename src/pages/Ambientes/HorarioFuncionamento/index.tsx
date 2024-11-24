@@ -363,9 +363,8 @@ export default function GerenciarHorarios() {
                             <Box sx={{ textAlign: 'center', mt: 2 }}>
 
                                 <Button
-                                    variant="contained"
-                                    color="secondary"
-
+                                    variant="outlined"
+                                    color="error"
                                     size="large"
                                     sx={{ mt: 2, width: '45%', mr: 1 }}
                                     onClick={() => navigate(-1)}

@@ -21,6 +21,7 @@ import { ptBR } from '@mui/x-data-grid/locales'
 import { LayoutDashboard } from "../../components/LayoutDashboard"
 import { SnackbarMui } from "../../components/Snackbar"
 import { IToken } from "../../interfaces/token"
+import { GridInitialStateCommunity } from "@mui/x-data-grid/models/gridStateCommunity"
 
 interface INotificacoes {
     id: number
@@ -78,10 +79,12 @@ export default function Notificacoes() {
 
             axios.get(import.meta.env.VITE_URL + '/reserva/notificacao', { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    setNotificacoes(res.data)
+                    console.log(res.data.notificacao)
+                    setNotificacoes(res.data.notificacao)
                     setLoading(false)
                 })
                 .catch((err) => {
+                    console.log(err.data.notificacao)
                     setNotificacoes(err)
                     setLoading(false)
                 })
@@ -106,13 +109,31 @@ export default function Notificacoes() {
 
     const columns: GridColDef[] = [
         {
-            field: 'id',
-            headerName: 'ID',
-            width: 60,
-            filterable: false,
-            sortable: false,
+            field: 'created_at',
+            headerName: 'Data e Horário',
+            minWidth: 120,
+            filterable: true,
             headerAlign: 'center',
-            align: 'center'
+            align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Box
+                    sx={{
+                        whiteSpace: 'normal',
+                        wordBreak: 'break-word',
+                        padding: '12px',
+                        width: '100%',
+                        textAlign: 'left',
+                        '& p': {
+                            margin: 0,
+                            lineHeight: 1.5
+                        }
+                    }}
+                >
+                    <Typography variant="body2">
+                        {new Date(String(params.value)).toLocaleString("pt-BR")}
+                    </Typography>
+                </Box>
+            ),
         },
         ...(token.usuario.isAdmin
             ? [
@@ -128,10 +149,30 @@ export default function Notificacoes() {
             ]
             : []),
         {
-            field: 'reserva',
-            headerName: 'Reserva',
+            field: 'infoReserva',
+            headerName: 'Ambiente, Data, Horário',
             width: 230,
+            headerAlign: 'center',
             filterable: true,
+            renderCell: (params: GridRenderCellParams) => (
+                <Box
+                    sx={{
+                        whiteSpace: 'normal',
+                        wordBreak: 'break-word',
+                        padding: '12px',
+                        width: '100%',
+                        textAlign: 'left',
+                        '& p': {
+                            margin: 0,
+                            lineHeight: 1.5
+                        }
+                    }}
+                >
+                    <Typography variant="body2">
+                        {params.value}
+                    </Typography>
+                </Box>
+            ),
         },
         {
             field: 'tipo',
@@ -151,8 +192,8 @@ export default function Notificacoes() {
                         label={params.value}
                         color={
                             params.value === 'confirmacao' ? 'success' :
-                                params.value === 'cancelamento' ? 'error' :
-                                    params.value === 'lembrete' ? 'info' :
+                                params.value === 'Cancelado' ? 'error' :
+                                    params.value === 'Lembrete' ? 'warning' :
                                         'info'
                         }
                     />
@@ -162,7 +203,7 @@ export default function Notificacoes() {
         {
             field: 'mensagem',
             headerName: 'Mensagem',
-            minWidth: 270,
+            minWidth: 250,
             flex: 1,
             filterable: true,
             headerAlign: 'center',
@@ -189,8 +230,8 @@ export default function Notificacoes() {
         },
         {
             field: 'visualizacao',
-            headerName: 'Visto',
-            width: 80,
+            headerName: 'Lido',
+            width: 110,
             filterable: true,
             headerAlign: 'center',
             align: 'center',
@@ -208,33 +249,6 @@ export default function Notificacoes() {
                 </Box>
             ),
         },
-        {
-            field: 'created_at',
-            headerName: 'Data',
-            minWidth: 120,
-            filterable: true,
-            headerAlign: 'center',
-            align: 'center',
-            renderCell: (params: GridRenderCellParams) => (
-                <Box
-                    sx={{
-                        whiteSpace: 'normal',
-                        wordBreak: 'break-word',
-                        padding: '12px',
-                        width: '100%',
-                        textAlign: 'left',
-                        '& p': {
-                            margin: 0,
-                            lineHeight: 1.5
-                        }
-                    }}
-                >
-                    <Typography variant="body2">
-                        {new Date(String(params.value)).toLocaleString("pt-BR")}
-                    </Typography>
-                </Box>
-            ),
-        }
     ]
 
     return (
@@ -262,7 +276,7 @@ export default function Notificacoes() {
                             variant="contained"
                             color="primary"
                             sx={{ ml: 2 }}
-                        > Marcar todos como lidos</Button>
+                        > Marcar todos como lido</Button>
 
                     </Box>
 
@@ -272,6 +286,11 @@ export default function Notificacoes() {
                             columns={columns}
                             getRowHeight={() => 90} // Increased row height
                             density="comfortable"
+                            initialState={{
+                                sorting: {
+                                    sortModel: [{ field: 'visualizacao', sort: 'asc' }], // Ordenação inicial
+                                },
+                            } as GridInitialStateCommunity}
                             paginationModel={paginationModel}
                             onPaginationModelChange={setPaginationModel}
                             pageSizeOptions={[10, 25, 50, { value: -1, label: 'Todos os Registros' }]}

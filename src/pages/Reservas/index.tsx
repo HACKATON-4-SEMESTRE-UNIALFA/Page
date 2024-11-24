@@ -10,7 +10,8 @@ import {
     Box,
     IconButton,
     Avatar,
-    Tooltip
+    Tooltip,
+    Chip
 } from '@mui/material'
 import {
     DataGrid,
@@ -210,6 +211,26 @@ export default function Reservas() {
             filterable: true,
             headerAlign: 'center',
             align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '100%',
+                    }}
+                >
+                    <Chip
+                        label={params.value}
+                        color={
+                            params.value === 'Finalizado' ? 'success' :
+                                params.value === 'Cancelado' ? 'error' :
+                                    params.value === 'Ativo' ? 'warning' :
+                                        'info'
+                        }
+                    />
+                </Box>
+            ),
         },
         {
             field: 'acoes',
@@ -276,8 +297,8 @@ export default function Reservas() {
     const fetchHistorico = useCallback(async (idReserva: number) => {
         setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_URL}/historico?id_reserva=${idReserva}`);
-            setHistorico(response.data);
+            const response = await axios.get(`${import.meta.env.VITE_URL}/reserva/${idReserva}/historico`, { headers: { Authorization: `Bearer ${token.accessToken}` } });
+            setHistorico(response.data.historico);
             handleOpen();
             setLoading(false);
         } catch (error) {
@@ -290,11 +311,12 @@ export default function Reservas() {
         if (!idReservaSelecionada) return;
 
         try {
-            await axios.post(`/reservas/desativa/${idReservaSelecionada}/usuario/${token.usuario.id}`, {
+            await axios.put(`${import.meta.env.VITE_URL}/reservas/desativa/${idReservaSelecionada}/usuario/${token.usuario.id}`, {
                 mensagem
             }, { headers: { Authorization: `Bearer ${token.accessToken}` } });
             fecharModal(); // Fecha o modal após o sucesso
             handleShowSnackbar("Reserva Cancelada realizado com sucesso!", "success");
+            navigate('/reservas');
         } catch (error) {
             fecharModal();
             console.error("Erro ao salvar o cancelamento:", error);
@@ -351,7 +373,7 @@ export default function Reservas() {
                             density="standard"
                             initialState={{
                                 sorting: {
-                                    sortModel: [{ field: 'data', sort: 'asc' }], // Ordenação inicial
+                                    sortModel: [{ field: 'data', sort: 'desc' }], // Ordenação inicial
                                 },
                             } as GridInitialStateCommunity}
                             paginationModel={paginationModel}

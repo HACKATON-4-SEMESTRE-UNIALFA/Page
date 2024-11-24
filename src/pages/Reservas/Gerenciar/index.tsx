@@ -89,6 +89,7 @@ export default function GerenciarReservas() {
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [disableDates, setDisableDates] = useState<string[]>([]);
+    const [horarioSalvo, setHorarioSalvo] = useState<string>('');
 
 
 
@@ -113,9 +114,9 @@ export default function GerenciarReservas() {
         }
 
         // Busca ambientes
-        axios.get(import.meta.env.VITE_URL + '/ambientes?status=Disponível', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+        axios.get(import.meta.env.VITE_URL + '/ambiente/disponivel', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
-                setAmbientes(res.data.ambiente);
+                setAmbientes(res.data.ambientes);
             })
             .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"))
 
@@ -132,7 +133,8 @@ export default function GerenciarReservas() {
                     setValue("data", reservaData.data || '');
                     setSelectedDate(reservaData.data ? dayjs(reservaData.data) : null);
                     fetchAvailableTimes(reservaData.data);
-                    setSelectedTime(reservaData.horario || null);
+                    setHorarioSalvo(reservaData.horario || '');
+                    handleAmbienteChange(reservaData.id_ambiente);
                     setLoading(false)
                 })
                 .catch((err) => {
@@ -142,7 +144,7 @@ export default function GerenciarReservas() {
         }
     }, [id, navigate, setValue]);
 
-    const getDisabledDates = useCallback((diasBloqueados: string[] = []) => {
+    const getDisabledDates = useCallback((diasBloqueados: string[]) => {
         const today = dayjs();
         const disabledDates: string[] = [];
 
@@ -157,7 +159,7 @@ export default function GerenciarReservas() {
         // Combina as datas dos finais de semana com as datas bloqueadas da API
         const allDisabledDates = [...new Set([...disabledDates, ...diasBloqueados])]; // Remove duplicatas
         setDisableDates(allDisabledDates);
-    }, [setDisableDates]);
+    }, [disableDates ,setDisableDates]);
 
     const handleAmbienteChange = useCallback((id: any) => {
         setLoading(true);
@@ -382,7 +384,7 @@ export default function GerenciarReservas() {
                                                     lineHeight: 1
                                                 }}
                                             >
-                                                {selectedTime ? (
+                                                {horarioSalvo ? (
                                                     <>
                                                         Horário Atual:&nbsp;
                                                         <Box
@@ -392,7 +394,7 @@ export default function GerenciarReservas() {
                                                                 color: 'white'
                                                             }}
                                                         >
-                                                            {selectedTime}
+                                                            {horarioSalvo}
                                                         </Box>
                                                     </>
                                                 ) : ''}
@@ -429,7 +431,7 @@ export default function GerenciarReservas() {
                                                                             backgroundColor: field.value === time ? 'primary.dark' : 'rgba(0, 0, 0, 0.04)'
                                                                         }
                                                                     }}
-                                                                    onClick={() => field.onChange(time)}
+                                                                    onClick={() => {field.onChange(time)}}
                                                                     fullWidth
                                                                 >
                                                                     {time}
@@ -453,7 +455,7 @@ export default function GerenciarReservas() {
                                 <Button
                                     type="button"
                                     variant="outlined"
-                                    color="secondary"
+                                    color="error"
                                     size="large"
                                     onClick={() => navigate('/reservas')}
                                     sx={{ mt: 1, mb: 1, width: { xs: '100%', md: '50%' } }}

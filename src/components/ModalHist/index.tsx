@@ -10,6 +10,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import { useCallback } from "react";
 
 const style = {
   position: "absolute",
@@ -45,6 +46,24 @@ export default function HistoricoModal({
   open: boolean;
   handleClose: () => void;
 }) {
+
+  const ordenarPorData = useCallback(
+    (historico: Array<{
+      id_reserva: number;
+      nome_alteracao: string;
+      ambiente: string;
+      horario: string;
+      data: string;
+      status: string;
+      created_at: string;
+    }>) =>
+      historico.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ),
+    []
+  );
+
   return (
     <Modal
       open={open}
@@ -69,7 +88,7 @@ export default function HistoricoModal({
               </TableRow>
             </TableHead>
             <TableBody>
-              {historico.map((item, index) => (
+              {ordenarPorData(historico).map((item, index) => (
                 <TableRow key={index}>
                   <TableCell sx={{ textAlign: "center" }}>{item.ambiente}</TableCell>
                   <TableCell sx={{ textAlign: "center" }}>{item.horario}</TableCell>
@@ -77,7 +96,6 @@ export default function HistoricoModal({
                   <TableCell sx={{ textAlign: "center" }}>{item.status}</TableCell>
                   <TableCell sx={{ textAlign: "center" }}>{item.nome_alteracao}</TableCell>
                   <TableCell sx={{ textAlign: "center" }}>{new Date(item.created_at).toLocaleString("pt-BR")}</TableCell>
-
                 </TableRow>
               ))}
             </TableBody>
@@ -87,4 +105,5 @@ export default function HistoricoModal({
     </Modal>
   );
 }
+
 

@@ -217,7 +217,7 @@ export default function Ambientes() {
                                                 component="img"
                                                 alt={`Imagem do ambiente ${ambiente.nome}`}
                                                 height="150"
-                                                image= {`http://localhost:8000/api/imagens/${ambiente.imagem}`}
+                                                image= {`${import.meta.env.VITE_URL}/imagens/${ambiente.imagem}`}
                                             />
                                             <CardContent sx={{ flexGrow: 1 }}>
                                                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
