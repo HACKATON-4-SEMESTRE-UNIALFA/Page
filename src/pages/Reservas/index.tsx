@@ -111,7 +111,7 @@ export default function Reservas() {
 
             axios.get(import.meta.env.VITE_URL + '/reservas', { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    setDadosReservas(res.data)
+                    setDadosReservas(res.data.reserva)
                     setLoading(false)
                 })
                 .catch((err) => {

@@ -252,9 +252,9 @@ export default function GerenciarAmbientes() {
                                         <InputLabel>Categoria</InputLabel>
                                         <Select {...field} label="Categoria">
                                             <MenuItem value="">Selecione a categoria</MenuItem>
-                                            <MenuItem value="Disponível">Disponível</MenuItem>
-                                            <MenuItem value="Manutenção">Manutenção</MenuItem>
-                                            <MenuItem value="Indisponível">Indisponível</MenuItem>
+                                            <MenuItem value="disponível">Disponível</MenuItem>
+                                            <MenuItem value="manutenção">Manutenção</MenuItem>
+                                            <MenuItem value="indisponível">Indisponível</MenuItem>
                                         </Select>
                                         {errors.status && (
                                             <FormHelperText>{errors.status.message}</FormHelperText>
