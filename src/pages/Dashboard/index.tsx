@@ -93,12 +93,14 @@ export default function Dashboard() {
             <LayoutDashboard>
                 <MuiGrid container spacing={3} sx={{ mt: 3 }}>
                     {/* Totais */}
-                    <MuiGrid size={{xs: 12, sm: 6}}>
+                    <MuiGrid size={{xs: 12, sm: 6}} alignItems={"center"} display={"flex"} flexDirection={"column"}>
                         <Card>
                             <CardContent>
                                 <Typography variant="h5">Total de Ambientes</Typography>
                                 <Typography variant="h6">{dadosAmbientes.length}</Typography>
                             </CardContent>
+                        </Card>
+                        <Card>
                             <CardContent>
                                 <Typography variant="h5">Total de Rerservas</Typography>
                                 <Typography variant="h6">{dadosAmbientes.length}</Typography>

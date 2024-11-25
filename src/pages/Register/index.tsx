@@ -45,43 +45,48 @@ export default function Register() {
 
     const onSubmit = useCallback(async (data: IRegister) => {
         setLoading(true);
+      
         try {
-            const cleanCpf = data.cpf.replace(/\D/g, ''); // Remove tudo que não é número
-            const cleanTelefone = data.telefone.replace(/\D/g, ''); // Remove tudo que não é número
-
-            const cleanData = {
-                ...data,
-                cpf: cleanCpf,
-                telefone: cleanTelefone,
-                isAdmin: false
-            };
-
-            console.log('Dados enviados:', cleanData);
-
-            const response = await axios.post(`${import.meta.env.VITE_URL}/usuarios`, cleanData);
-
-            if (response.status === 200) {
-                handleShowSnackbar('Registro efetuado com sucesso!', 'success');
-                setTimeout(() => {
-                    navigate('/');
-                }, 1500);
-            } else {
-                setLoading(false);
-                const apiError = response.data.message || 'Erro ao registrar usuário!';
-                handleShowSnackbar(apiError, 'error');
-            }
+          const cleanData = {
+            ...data,
+            cpf: data.cpf.replace(/\D/g, ''),
+            telefone: data.telefone.replace(/\D/g, ''),
+            isAdmin: false,
+          };
+          
+          const response = await axios.post(`${import.meta.env.VITE_URL}/usuarios`, cleanData);
+      
+          if (response.status === 200) {
+            handleShowSnackbar('Registro efetuado com sucesso!', 'success');
+            setTimeout(() => navigate('/'), 1500);
+          }
         } catch (error) {
-            setLoading(false);
-            console.error('Erro ao registrar:', error);
-            handleShowSnackbar('Erro ao registrar usuário!', 'error');
+          setLoading(false);
+      
+          if (axios.isAxiosError(error) && error.response?.data?.errors) {
+            const { errors } = error.response.data;
+      
+            // Captura mensagens específicas de CPF e Email
+            const cpfError = errors.cpf?.[0];
+            const emailError = errors.email?.[0];
+      
+            if (cpfError) handleShowSnackbar(cpfError, 'error');
+            if (emailError) handleShowSnackbar(emailError, 'error');
+          } else {
+            // Mensagem genérica em caso de erro desconhecido
+            handleShowSnackbar('Erro desconhecido ao registrar usuário!', 'error');
+          }
         }
-    }, [navigate]);
+      }, [navigate, handleShowSnackbar]);
 
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (!/[0-9]/.test(e.key)) {
-            e.preventDefault();
-        }
-    };
+    const handleKeyPress = useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        },
+        []
+    );
 
     return (
         <>
