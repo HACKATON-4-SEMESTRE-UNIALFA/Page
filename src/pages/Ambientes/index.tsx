@@ -1,40 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Controller, set, SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
 
 import {
     Box,
     Button,
     Container,
-    FormControl,
-    MenuItem,
-    Select,
-    TextField,
     Typography,
-    Paper,
-    IconButton,
-    InputLabel,
     Card,
     CardMedia,
     CardContent,
     Chip,
     CardActions,
-    Badge,
 } from "@mui/material";
-import LoadingButton from '@mui/lab/LoadingButton';
 import Grid from "@mui/material/Grid2";
-import { styled } from "@mui/material/styles";
-import CropOriginalIcon from '@mui/icons-material/CropOriginal';
-import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from '@mui/icons-material/Edit'
 import { verificaTokenExpirado } from "../../services/token";
 import { SnackbarMui } from "../../components/Snackbar";
 import { Loading } from "../../components/Loading";
 import { LayoutDashboard } from "../../components/LayoutDashboard";
-import { ConfirmationDialog } from "../../components/Dialog";
 import { IToken } from "../../interfaces/token";
 import ControlPointRoundedIcon from '@mui/icons-material/ControlPointRounded';
 
@@ -62,16 +46,7 @@ export default function Ambientes() {
     const [loading, setLoading] = useState(false)
     const [dadosAmbientes, setDadosAmbientes] = useState<Array<IAmbientes>>([])
     const [dadosHorarios, setDadosHorarios] = useState<Array<IHorarioFuncionamento>>([])
-
-    const [paginationModel, setPaginationModel] = useState({
-        page: 0,
-        pageSize: 10,
-    })
     const location = useLocation();
-    const [dialogState, setDialogState] = useState({
-        open: false,
-        id: null as number | null
-    })
 
     const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken
 
@@ -103,10 +78,6 @@ export default function Ambientes() {
             })
     }, [location])
 
-    const removeAmbiente = useCallback((id: number) => {
-        setDialogState({ open: true, id });
-    }, []);
-
     const handleShowSnackbar = useCallback((
         message: string,
         severity: 'success' | 'error' | 'warning' | 'info'
@@ -116,21 +87,6 @@ export default function Ambientes() {
         setSeverity(severity);
     }, [setSnackbarVisible, setMessage, setSeverity]);
 
-    const handleConfirmedDelete = useCallback(() => {
-        const id = dialogState.id;
-
-        axios.delete(import.meta.env.VITE_URL + `/ambientes/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
-            .then(() => {
-                handleShowSnackbar("Ambiente removido com sucesso", "success");
-                setDadosAmbientes((prevRows) => prevRows.filter((row) => row.id !== id));
-                setLoading(false)
-            })
-            .catch((error) => {
-                const errorMessage = error.response?.data || "Erro ao remover Ambiente";
-                setLoading(false)
-                handleShowSnackbar(errorMessage, "error");
-            })
-    }, [dialogState.id, setLoading]);
 
     return (
         <>
@@ -147,13 +103,6 @@ export default function Ambientes() {
                     }}
                 />
                 <Container maxWidth="xl" sx={{ mb: 4, mt: 3 }}>
-                    <ConfirmationDialog
-                        open={dialogState.open}
-                        title="Confirmar exclusão"
-                        message="Tem certeza que deseja excluir este Ambiente ?"
-                        onConfirm={handleConfirmedDelete}
-                        onClose={() => setDialogState({ open: false, id: null })}
-                    />
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap">
                         <Typography variant="h4" component="h1">
                             Ambientes
@@ -286,13 +235,6 @@ export default function Ambientes() {
                                                         onClick={() => navigate(`/ambientes/${ambiente.id}`)}
                                                     >
                                                         Editar
-                                                    </Button>
-                                                    <Button
-                                                        color="error"
-                                                        size="large"
-                                                        onClick={() => removeAmbiente(ambiente.id)}
-                                                    >
-                                                        Excluir
                                                     </Button>
                                                 </CardActions>
                                             )}

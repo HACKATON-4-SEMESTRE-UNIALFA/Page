@@ -58,12 +58,18 @@ export default function Register() {
 
             console.log('Dados enviados:', cleanData);
 
-            await axios.post(`${import.meta.env.VITE_URL}/usuarios`, cleanData);
+            const response = await axios.post(`${import.meta.env.VITE_URL}/usuarios`, cleanData);
 
-            handleShowSnackbar('Registro efetuado com sucesso!', 'success');
-            setTimeout(() => {
-                navigate('/');
-            }, 1500);
+            if (response.status === 200) {
+                handleShowSnackbar('Registro efetuado com sucesso!', 'success');
+                setTimeout(() => {
+                    navigate('/');
+                }, 1500);
+            } else {
+                setLoading(false);
+                const apiError = response.data.message || 'Erro ao registrar usuário!';
+                handleShowSnackbar(apiError, 'error');
+            }
         } catch (error) {
             setLoading(false);
             console.error('Erro ao registrar:', error);
@@ -71,7 +77,6 @@ export default function Register() {
         }
     }, [navigate]);
 
-    // Função para bloquear a digitação de letras e caracteres especiais
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (!/[0-9]/.test(e.key)) {
             e.preventDefault();

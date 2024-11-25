@@ -279,7 +279,7 @@ export default function Notificacoes() {
     return (
         <>
             <Loading visible={loading} />
-            <LayoutDashboard>
+            <LayoutDashboard refresh={refreshKey}>
                 <SnackbarMui
                     open={snackbarVisible}
                     message={message}

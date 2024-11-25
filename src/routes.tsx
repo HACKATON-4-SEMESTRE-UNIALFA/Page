@@ -1,22 +1,13 @@
 import {
     Routes,
     Route,
-    BrowserRouter
+    BrowserRouter,
+    Navigate
 
 } from "react-router-dom"
 import Login from "./pages/Login"
 import Usuarios from "./pages/Usuarios"
 import GerenciarUsuarios from "./pages/Usuarios/Gerenciar"
-import Premios from "./pages/Premios"
-import GerenciarPremios from "./pages/Premios/Gerenciar"
-import Instituicao from "./pages/Instituicao"
-import Historia from "./pages/Historia"
-import Parceiros from "./pages/Parceiros"
-import GerenciarParceiros from "./pages/Parceiros/Gerenciar"
-import Colaboradores from "./pages/Colaboradores"
-import GerenciarColaboradores from "./pages/Colaboradores/Gerenciar"
-import Doacao from "./pages/Doacao"
-import { AddModerator } from "@mui/icons-material"
 import Ambientes from "./pages/Ambientes"
 import Reservas from "./pages/Reservas"
 import GerenciarReservas from "./pages/Reservas/Gerenciar"
@@ -27,7 +18,19 @@ import Dashboard from "./pages/Dashboard"
 import Register from "./pages/Register"
 import Blacklist from "./pages/BlackList"
 import WhiteList from "./pages/WhiteList"
+import { IToken } from "./interfaces/token"
+import PageError from "./pages/PageError"
 
+
+const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+    const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken
+
+    if (!token.usuario.isAdmin) {
+        return <Navigate to="/404" />
+    }
+
+    return children
+}
 
 export const Rotas = () => {
 
@@ -35,7 +38,12 @@ export const Rotas = () => {
         <BrowserRouter>
 
             <Routes>
-
+                <Route
+                    path="/404"
+                    element={
+                        <PageError />
+                    }
+                />
                 <Route
                     path="/"
                     element={
@@ -52,48 +60,81 @@ export const Rotas = () => {
                         <Dashboard />
                     }
                 />
-                 <Route
+                <Route
                     path="/notificacoes"
-                    element={<Notificacoes />}
+                    element={
+                        <Notificacoes />
+                    }
                 />
                 <Route
                     path="/ambientes"
-                    element={<Ambientes />}
+                    element={
+                        <Ambientes />
+                    }
                 />
                 <Route
                     path="/ambientes/:id"
-                    element={<GerenciarAmbientes />}
+                    element={
+                        <PrivateRoute>
+                            <GerenciarAmbientes />
+                        </PrivateRoute>
+                    }
                 />
-                 <Route
+                <Route
                     path="/horarios/:id"
-                    element={<GerenciarHorarios />}
+                    element={
+                        <PrivateRoute>
+                            <GerenciarHorarios />
+                        </PrivateRoute>
+                    }
                 />
                 <Route
                     path="/reservas"
-                    element={<Reservas />}
+                    element={
+                        <Reservas />
+                    }
                 />
                 <Route
                     path="/reservas/:id"
-                    element={<GerenciarReservas />}
+                    element={
+                        <PrivateRoute>
+                            <GerenciarReservas />
+                        </PrivateRoute>
+                    }
                 />
                 <Route
                     path="/calendario/blacklist"
-                    element={<Blacklist/>}
+                    element={
+                        <PrivateRoute>
+                            <Blacklist />
+                        </PrivateRoute>
+                    }
                 />
-                 <Route
+                <Route
                     path="/calendario/whitelist"
-                    element={<WhiteList/>}
+                    element={
+                        <PrivateRoute>
+                            <WhiteList />
+                        </PrivateRoute>
+                    }
                 />
                 <Route
                     path="/usuarios"
-                    element={<Usuarios />}
+                    element={
+                        <PrivateRoute>
+                            <Usuarios />
+                        </PrivateRoute>
+                    }
                 />
                 <Route
                     path="/usuarios/:id"
-                    element={<GerenciarUsuarios />}
+                    element={
+                        <PrivateRoute>
+                            <GerenciarUsuarios />
+                        </PrivateRoute>
+                    }
                 />
             </Routes>
-
         </BrowserRouter>
     )
 

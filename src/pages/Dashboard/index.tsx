@@ -32,16 +32,12 @@ export default function Dashboard() {
 
     const navigate = useNavigate();
 
-    // Dados mockados
-    const userData = [
-        { name: "Admin", value: 2 },
-        { name: "User", value: 8 },
-    ];
-
     const ambienteData = [
         { name: "Disponível", value: 1 },
         { name: "Manutenção", value: 1 },
     ];
+
+   
 
     const reservasData = [
         { dia: "Segunda", Confirmadas: 5, Ativas: 3, Canceladas: 2 },
@@ -53,7 +49,6 @@ export default function Dashboard() {
         { dia: "Domingo", Confirmadas: 9, Ativas: 2, Canceladas: 2 },
     ];
 
-    const COLORS_USER = ["#3f51b5", "#ff9800"];
     const COLORS_AMBIENTE = ["#4caf50", "#f44336"];
 
     const token = JSON.parse(localStorage.getItem("auth.token") || "") as IToken;
@@ -98,54 +93,20 @@ export default function Dashboard() {
             <LayoutDashboard>
                 <MuiGrid container spacing={3} sx={{ mt: 3 }}>
                     {/* Totais */}
-                    <MuiGrid size={{xs: 12, sm: 6}} >
-                        <Card>
-                            <CardContent>
-                                <Typography variant="h5">Total de Usuários</Typography>
-                                <Typography variant="h6">{dadosUsuarios.length}</Typography>
-                            </CardContent>
-                        </Card>
-                    </MuiGrid>
                     <MuiGrid size={{xs: 12, sm: 6}}>
                         <Card>
                             <CardContent>
                                 <Typography variant="h5">Total de Ambientes</Typography>
                                 <Typography variant="h6">{dadosAmbientes.length}</Typography>
                             </CardContent>
+                            <CardContent>
+                                <Typography variant="h5">Total de Rerservas</Typography>
+                                <Typography variant="h6">{dadosAmbientes.length}</Typography>
+                            </CardContent>
                         </Card>
                     </MuiGrid>
 
                     {/* Gráficos de Pizza */}
-                    <MuiGrid size={{xs: 12, sm: 6}}>
-                        <Card>
-                            <CardContent>
-                                <Typography variant="h6">Distribuição de Usuários</Typography>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <PieChart>
-                                        <Pie
-                                            data={userData}
-                                            dataKey="value"
-                                            nameKey="name"
-                                            cx="50%"
-                                            cy="50%"
-                                            outerRadius={100}
-                                            fill="#8884d8"
-                                            label
-                                        >
-                                            {userData.map((entry, index) => (
-                                                <Cell
-                                                    key={`cell-${index}`}
-                                                    fill={COLORS_USER[index % COLORS_USER.length]}
-                                                />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </CardContent>
-                        </Card>
-                    </MuiGrid>
                     <MuiGrid size={{xs: 12, sm: 6}}>
                         <Card>
                             <CardContent>
@@ -207,3 +168,4 @@ export default function Dashboard() {
         </>
     );
 }
+
