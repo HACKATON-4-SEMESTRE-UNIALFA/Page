@@ -295,6 +295,7 @@ export default function GerenciarUsuarios() {
                                 control={control}
                                 rules={{
                                     required: 'O telefone é obrigatório.',
+                                    maxLength: 11,
                                 }}
                                 render={({ field }) => (
                                     <FormTextField
