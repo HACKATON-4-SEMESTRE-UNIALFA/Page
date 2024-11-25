@@ -211,7 +211,7 @@ export default function GerenciarUsuarios() {
                                 rules={{
                                     required: 'O perfil é obrigatório.',
                                 }}
-                                
+
                                 render={({ field }) => (
                                     <FormControl fullWidth error={!!errors.isAdmin} sx={{ mb: 2 }}>
                                         <InputLabel>Perfil</InputLabel>
@@ -289,12 +289,12 @@ export default function GerenciarUsuarios() {
                                     />
                                 )}
                             />
-
                             <Controller
                                 name="telefone"
                                 control={control}
                                 rules={{
                                     required: 'O telefone é obrigatório.',
+                                    maxLength: 11,
                                 }}
                                 render={({ field }) => (
                                     <FormTextField
@@ -303,9 +303,20 @@ export default function GerenciarUsuarios() {
                                         label="Telefone"
                                         error={!!errors.telefone}
                                         helperText={errors.telefone?.message}
+                                        inputProps={{
+                                            maxLength: 11,
+                                            inputMode: 'numeric', // Sugere um teclado numérico
+                                            pattern: '[0-9]*', // Garante que apenas números sejam aceitos
+                                        }}
+                                        onKeyPress={(e) => {
+                                            if (!/[0-9]/.test(e.key)) {
+                                                e.preventDefault(); // Bloqueia a digitação de letras e caracteres especiais
+                                            }
+                                        }}
                                     />
                                 )}
                             />
+
 
                             <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mb: 2 }}>
                                 {isEdit ? "Atualizar" : "Cadastrar"}
