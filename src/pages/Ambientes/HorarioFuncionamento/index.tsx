@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { verificaTokenExpirado } from "../../../services/token";
 import { Controller, set, SubmitHandler, useForm } from "react-hook-form";
+import { useLocation } from 'react-router-dom';
+
 import axios from "axios";
 
 import {
@@ -19,7 +21,7 @@ import {
     Checkbox,
     Card,
     CardContent,
-    Grid,
+    Grid2 as Grid,
     Divider,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -30,13 +32,13 @@ import { IToken } from "../../../interfaces/token";
 
 interface IHorarioFuncionamento {
     id: number;
-    ambiente_id: string;
+    id_ambiente: string;
     horarios: string[];
 }
 
 interface IHorarioResponse {
     id: number;
-    ambiente_id: number;
+    id_ambiente: number;
     horario: string;
 }
 
@@ -84,7 +86,7 @@ export default function GerenciarHorarios() {
     } = useForm<IHorarioFuncionamento>({
         defaultValues: {
             id: 0,
-            ambiente_id: '',
+            id_ambiente: '',
             horarios: []
         }
     });
@@ -110,6 +112,7 @@ export default function GerenciarHorarios() {
     const [isEdit, setIsEdit] = useState<boolean>(false);
 
     const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken;
+    const location = useLocation();
 
     const handleSelectAllHorarios = (checked: boolean) => {
         setSelectAllHorarios(checked);
@@ -134,6 +137,12 @@ export default function GerenciarHorarios() {
             return;
         }
 
+        if (location.state?.snackbarMessage) {
+            setMessage(location.state.snackbarMessage);
+            setSeverity(location.state.snackbarSeverity);
+            setSnackbarVisible(true);
+        }
+
         const ambienteId = Number(id);
         if (!isNaN(ambienteId)) {
             // Busca ambientes
@@ -141,10 +150,11 @@ export default function GerenciarHorarios() {
 
             axios.get(import.meta.env.VITE_URL + '/ambientes/' + ambienteId, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    setAmbientes(res.data);
-                    setValue("ambiente_id", res.data.id.toString());
+                    setAmbientes(res.data.ambiente);
+                    setValue("id_ambiente", res.data.ambiente.id.toString());
                 })
-                .catch(() => {
+                .catch((err) => {
+                    console.log(err);
                     handleShowSnackbar("Erro ao buscar Ambiente", "error")
                     setTimeout(() => {
                         setLoading(false);
@@ -152,7 +162,7 @@ export default function GerenciarHorarios() {
                     }, 1500);
                 })
 
-            axios.get(import.meta.env.VITE_URL + `/horarios_funcionamento?ambiente_id=${ambienteId}`, {
+            axios.get(import.meta.env.VITE_URL + `/horarios/ambiente/${ambienteId}`, {
                 headers: { Authorization: `Bearer ${token.accessToken}` }
             })
                 .then((res) => {
@@ -187,12 +197,14 @@ export default function GerenciarHorarios() {
 
         try {
             if (isEdit) {
-                // For PUT requests, we need to compare existing horarios with selected ones
+
                 const existingResponse = await axios.get(
-                    `${import.meta.env.VITE_URL}/horarios_funcionamento?ambiente_id=${id}`,
-                    config
+
+                    `${import.meta.env.VITE_URL}/horarios/ambiente/${id}`, config
+
                 );
-                const existingHorarios = existingResponse.data as IHorarioResponse[];
+
+                const existingHorarios = existingResponse.data.horario as IHorarioResponse[];
 
                 // Find horários to remove and add
                 const existingHorarioStrings = existingHorarios.map(h => h.horario);
@@ -201,21 +213,18 @@ export default function GerenciarHorarios() {
 
                 // Remove unselected horários
                 await Promise.all(
-                    horariosToRemove.map(horario =>
-                        axios.delete(
-                            `${import.meta.env.VITE_URL}/horarios_funcionamento/${horario.id}`,
-                            config
+                    horariosToRemove.map(horario => axios.delete(
+
+                            `${import.meta.env.VITE_URL}/horarios/${horario.id}`,config
                         )
                     )
                 );
 
                 // Add new horários
                 await Promise.all(
-                    horariosToAdd.map(horario =>
-                        axios.post(
-                            `${import.meta.env.VITE_URL}/horarios_funcionamento`,
+                    horariosToAdd.map(horario => axios.post(`${import.meta.env.VITE_URL}/horarios`,
                             {
-                                ambiente_id: data.ambiente_id,
+                                id_ambiente: data.id_ambiente,
                                 horario: horario
                             },
                             config
@@ -228,9 +237,9 @@ export default function GerenciarHorarios() {
                 await Promise.all(
                     selectedHorarios.map(horario =>
                         axios.post(
-                            `${import.meta.env.VITE_URL}/horarios_funcionamento`,
+                            `${import.meta.env.VITE_URL}/horarios`,
                             {
-                                ambiente_id: data.ambiente_id,
+                                id_ambiente: data.id_ambiente,
                                 horario: horario
                             },
                             config
@@ -249,6 +258,7 @@ export default function GerenciarHorarios() {
             setTimeout(() => { navigate('/ambientes'); }, 1500);
 
         } catch (error: any) {
+            console.log(error);
             const errorMessage = error.response?.data?.message || 'Erro ao processar a requisição';
             setLoading(false);
             handleShowSnackbar(errorMessage, 'error');
@@ -277,14 +287,14 @@ export default function GerenciarHorarios() {
 
                         <Box component="form" onSubmit={handleSubmit(submitForm)} noValidate>
                             <Controller
-                                name="ambiente_id"
+                                name="id_ambiente"
                                 control={control}
                                 rules={{ required: "Selecione um ambiente" }}
                                 render={({ field }) => (
                                     <FormControl
                                         fullWidth
                                         sx={{ mb: 2 }}
-                                        error={!!errors.ambiente_id}
+                                        error={!!errors.id_ambiente}
                                     >
                                         <InputLabel>Ambiente</InputLabel>
                                         <Select
@@ -293,8 +303,8 @@ export default function GerenciarHorarios() {
                                         >
                                             <MenuItem value={ambientes?.id}>{ambientes?.nome}</MenuItem>
                                         </Select>
-                                        {errors.ambiente_id && (
-                                            <FormHelperText>{errors.ambiente_id.message}</FormHelperText>
+                                        {errors.id_ambiente && (
+                                            <FormHelperText>{errors.id_ambiente.message}</FormHelperText>
                                         )}
                                     </FormControl>
                                 )}
@@ -327,8 +337,8 @@ export default function GerenciarHorarios() {
                                             sx={{ mb: 1 }}
                                         />
                                         <StyledCard>
-                                            <CardContent sx={{padding: 0}}>
-                                                <TimeSlotGrid sx={{display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center'}}>
+                                            <CardContent sx={{ padding: 0 }}>
+                                                <TimeSlotGrid sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
                                                     {timeSlots.map((horario) => (
                                                         <FormControlLabel
                                                             key={horario}
@@ -351,28 +361,27 @@ export default function GerenciarHorarios() {
                                 )}
                             />
                             <Box sx={{ textAlign: 'center', mt: 2 }}>
-                            
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                
-                                size="large"
-                                sx={{ mt: 2, width: '45%', mr: 1 }}
-                                onClick={() => navigate(-1)}
-                            >
-                                Voltar
-                            </Button>
 
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                
-                                size="large"
-                                sx={{ mt: 2, width: '45%' }}
-                            >
-                                Salvar
-                            </Button>
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    size="large"
+                                    sx={{ mt: 2, width: '45%', mr: 1 }}
+                                    onClick={() => navigate(-1)}
+                                >
+                                    Voltar
+                                </Button>
+
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+
+                                    size="large"
+                                    sx={{ mt: 2, width: '45%' }}
+                                >
+                                    Salvar
+                                </Button>
 
                             </Box>
                         </Box>

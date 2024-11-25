@@ -14,6 +14,7 @@
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
     "@fontsource/roboto": "^5.1.0",
+    "@hookform/resolvers": "^3.9.1",
     "@lexical/react": "^0.18.0",
     "@lexical/rich-text": "^0.18.0",
     "@mui/icons-material": "^6.1.2",
@@ -42,7 +43,7 @@
     "quill-image-resize-module": "^3.0.0",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.4",
-    "react-day-picker": "^9.3.2",
+    "react-chartjs-2": "^5.2.0",
     "react-draft-wysiwyg": "^1.15.0",
     "react-hook-form": "^7.53.2",
     "react-input-mask": "^2.0.4",
@@ -50,6 +51,7 @@
     "react-resizable": "^3.0.5",
     "react-router-dom": "^6.26.0",
     "react-tabs": "^6.0.2",
+    "recharts": "^2.13.3",
     "styled-components": "^6.1.13"
   },
   "devDependencies": {

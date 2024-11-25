@@ -4,6 +4,7 @@ import { verificaTokenExpirado } from "../../../services/token";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import 'dayjs/locale/pt-br';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from "axios";
@@ -21,6 +22,7 @@ import {
     Typography,
     Paper,
     Divider,
+    Stack,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
@@ -30,10 +32,11 @@ import DropZone from "../../../components/Dropzone";
 import { Loading } from "../../../components/Loading";
 import { IToken } from "../../../interfaces/token";
 import { ptBR } from '@mui/x-date-pickers/locales';
+import { get, is } from "immutable";
 
 interface IReserva {
     id: number
-    ambiente_id: string
+    id_ambiente: string
     horario: string
     data: string
     usuario_id: number
@@ -42,6 +45,12 @@ interface IReserva {
 interface IAmbiente {
     id: number
     nome: string
+}
+
+interface IHorarioResponse {
+    data: string;
+    horariosDisponiveis: { [key: string]: string };
+    nomeAmbiente: string;
 }
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -65,7 +74,7 @@ export default function GerenciarReservas() {
     } = useForm<IReserva>({
         defaultValues: {
             id: 0,
-            ambiente_id: '',
+            id_ambiente: '',
             horario: '',
             data: ''
         }
@@ -79,6 +88,8 @@ export default function GerenciarReservas() {
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [disableDates, setDisableDates] = useState<string[]>([]);
+    const [horarioSalvo, setHorarioSalvo] = useState<string>('');
 
 
 
@@ -103,104 +114,145 @@ export default function GerenciarReservas() {
         }
 
         // Busca ambientes
-        axios.get(import.meta.env.VITE_URL + '/ambientes?status=Disponível', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+        axios.get(import.meta.env.VITE_URL + '/ambiente/disponivel', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
-                setAmbientes(res.data);
+                setAmbientes(res.data.ambientes);
             })
             .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"))
 
         const reservaId = Number(id);
         if (!isNaN(reservaId)) {
             setLoading(true);
-            /*axios.get(import.meta.env.VITE_URL + `/reservas/${reservaId}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            axios.get(import.meta.env.VITE_URL + `/reservas/${reservaId}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    const premioData = res.data;
+                    const reservaData = res.data.reserva;
                     setIsEdit(true);
-                    setValue("id", premioData.id || 0);
-                    setValue("nome", premioData.nome || '');
-                    setValue("categoria", premioData.categoria || '');
-                    setValue("data_recebimento", premioData.data_recebimento || '');
-
+                    setValue("id", reservaData.id || 0);
+                    setValue("id_ambiente", reservaData.id_ambiente || '');
+                    setValue("horario", reservaData.horario || '');
+                    setValue("data", reservaData.data || '');
+                    setSelectedDate(reservaData.data ? dayjs(reservaData.data) : null);
+                    fetchAvailableTimes(reservaData.data);
+                    setHorarioSalvo(reservaData.horario || '');
+                    handleAmbienteChange(reservaData.id_ambiente);
                     setLoading(false)
                 })
                 .catch((err) => {
                     handleShowSnackbar(err.response.data.message, 'error');
                     setLoading(false)
-                })*/
+                })
         }
     }, [id, navigate, setValue]);
 
-    function submitForm(data: IReserva, event?: BaseSyntheticEvent<object, any, any> | undefined): unknown {
-        throw new Error("Function not implemented.");
-    }
+    const getDisabledDates = useCallback((diasBloqueados: string[]) => {
+        const today = dayjs();
+        const disabledDates: string[] = [];
 
-    /*const submitForm: SubmitHandler<IReserva> = useCallback((data) => {
-        setLoading(true);
-
-        const formData = new FormData();
-        formData.append('id', data.id?.toString() || '');
-        formData.append('nome', data.nome);
-        formData.append('categoria', data.categoria);
-        formData.append('data_recebimento', data.data_recebimento);
-        formData.append('imagem', data.imagem || '');
-
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                authorization: `Bearer ${token.accessToken}`,
+        // Adiciona os finais de semana (sábados e domingos)
+        for (let i = 0; i < 31; i++) {
+            const date = today.add(i, 'day');
+            if (date.day() === 0 || date.day() === 6) {
+                disabledDates.push(date.format('YYYY-MM-DD'));
             }
-        };
+        }
 
-        const url = isEdit
-            ? `${import.meta.env.VITE_URL}/premios/${id}`
-            : `${import.meta.env.VITE_URL}/premios/`;
+        // Combina as datas dos finais de semana com as datas bloqueadas da API
+        const allDisabledDates = [...new Set([...disabledDates, ...diasBloqueados])]; // Remove duplicatas
+        setDisableDates(allDisabledDates);
+    }, [disableDates ,setDisableDates]);
 
-        const request = isEdit
-            ? axios.post(url, formData, config)
-            : axios.post(url, formData, config);
+    const handleAmbienteChange = useCallback((id: any) => {
+        setLoading(true);
+        if (!id) {
+            return setLoading(false);
+        }
 
-        request
-            .then((response) => {
-                handleShowSnackbar(
-                    isEdit
-                        ? 'Prêmio editado com sucesso!'
-                        : 'Prêmio adicionado com sucesso!',
-                    'success'
-                );
+        // Realiza a requisição para buscar os dias bloqueados do ambiente
+        axios.get(import.meta.env.VITE_URL + `/verificaReservaDia/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            .then((res) => {
+                // Supondo que 'res.data.horario' seja um array de datas bloqueadas
+                const diasBloqueados = res.data.diasOcupados || [];
+
+                // Combine as datas bloqueadas do ambiente com as datas dos finais de semana
+                getDisabledDates(diasBloqueados); // Passa as datas bloqueadas para a função de gerar finais de semana
                 setLoading(false);
-                setTimeout(() => { navigate('/premios'); }, 1500);
+            })
+            .catch((err) => {
+                console.log(err);
+                setLoading(false);
+            });
+    }, [setDisableDates, getDisabledDates]);
+
+    function submitForm(data: IReserva): void {
+        setLoading(true);
+        console.log(data)
+        // Configurar a URL e o método da requisição
+        const url = isEdit
+            ? `${import.meta.env.VITE_URL}/reservas/${data.id}`
+            : `${import.meta.env.VITE_URL}/reservas`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        // Montar os dados para a requisição
+        const requestData = isEdit
+            ? {
+                id_ambiente: data.id_ambiente,
+                horario: data.horario,
+                data: dayjs(data.data).format('YYYY-MM-DD'),
+                id_alteracao: token.usuario.id, // ID do usuário atual
+            }
+            : {
+                id_usuario: token.usuario.id, // ID do usuário atual criando a reserva
+                id_ambiente: data.id_ambiente,
+                horario: data.horario,
+                data: dayjs(data.data).format('YYYY-MM-DD'),
+            };
+
+        // Fazer a requisição
+        axios({
+            method,
+            url,
+            headers: { Authorization: `Bearer ${token.accessToken}` },
+            data: requestData,
+        })
+            .then((response) => {
+                handleShowSnackbar(isEdit ? 'Reserva atualizada com sucesso!' : 'Reserva criada com sucesso!', 'success');
+                navigate('/reservas'); // Redireciona para a lista de reservas
             })
             .catch((error) => {
-                const errorMessage = error.response?.data || 'Erro ao processar a requisição';
+                console.error('Erro ao processar a requisição:', error);
+                const errorMsg = error.response?.data?.message || 'Ocorreu um erro ao salvar os dados.';
+                handleShowSnackbar(errorMsg, 'error');
+            })
+            .finally(() => {
                 setLoading(false);
-                handleShowSnackbar(errorMessage, 'error');
             });
-    }, [isEdit, id, navigate]);*/
+    }
 
-    const fetchAvailableTimes = async (date) => {
+    const fetchAvailableTimes = useCallback(async (date: string) => {
         setLoading(true);
         setError(null);
+
+        const idAmbiente = getValues('id_ambiente');
+
         try {
-            // Simulando uma chamada à API
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const response = await axios.get<IHorarioResponse>(
+                `${import.meta.env.VITE_URL}/verificaReservaHorario/${idAmbiente}/${date}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`
+                    }
+                }
+            );
+            const horariosArray = Object.values(response.data.horariosDisponiveis);
+            setAvailableTimes(horariosArray);
 
-            // Simulando horários disponíveis - substitua pela sua chamada real à API
-            const mockTimes = [
-                '09:00-09:59',
-                '10:00-10:59',
-                '11:00-11:59',
-                '14:00-14:59',
-                '15:00-15:59',
-                '16:00-16:59'
-            ];
-
-            setAvailableTimes(mockTimes);
         } catch (err) {
             console.error('Erro ao buscar horários disponíveis:', err);
+            setError('Erro ao carregar horários disponíveis');
         } finally {
             setLoading(false);
         }
-    };
+    }, [getValues, token.accessToken]);
 
     // Fun o para lidar com a sele o de uma data
     const handleDateChange = useCallback(
@@ -213,45 +265,6 @@ export default function GerenciarReservas() {
         },
         [fetchAvailableTimes, setSelectedDate, setSelectedTime]
     );
-
-    const disabledDates = [
-        // Feriados nacionais
-        new Date('2024-01-01'), // Ano Novo
-        new Date('2024-04-21'), // Tiradentes
-        new Date('2024-05-01'), // Dia do Trabalho
-        new Date('2024-09-07'), // Independência do Brasil
-        new Date('2024-10-12'), // Nossa Senhora Aparecida
-        new Date('2024-11-02'), // Finados
-        new Date('2024-11-15'), // Proclamação da República
-        new Date('2024-12-25'), // Natal
-
-        // Feriados facultativos
-        new Date('2024-02-12'), // Carnaval
-        new Date('2024-02-13'), // Carnaval
-        new Date('2024-02-14'), // Quarta-feira de Cinzas
-
-        // Datas específicas de exemplo
-        new Date('2024-07-20'), // Data de exemplo
-        new Date('2024-08-15'), // Outra data de exemplo
-
-        // Exemplo de intervalo de férias
-        new Date('2024-12-20'),
-        new Date('2024-12-21'),
-        new Date('2024-12-22'),
-        new Date('2024-12-23'),
-        new Date('2024-12-24'),
-        new Date('2024-12-25'),
-        new Date('2024-12-26'),
-        new Date('2024-12-27'),
-        new Date('2024-12-28'),
-        new Date('2024-12-29'),
-        new Date('2024-12-30'),
-        new Date('2024-12-31')
-    ];
-
-
-
-
 
     return (
         <>
@@ -276,20 +289,31 @@ export default function GerenciarReservas() {
                         <Box component="form" onSubmit={handleSubmit(submitForm)} noValidate>
 
                             <Controller
-                                name="ambiente_id"
+                                name="id_ambiente"
                                 control={control}
                                 rules={{ required: 'Ambiente é obrigatório!' }}
                                 render={({ field }) => (
-                                    <FormControl fullWidth error={!!errors.ambiente_id} sx={{ mb: 2 }}>
-                                        <InputLabel>Ambiente</InputLabel>
-                                        <Select {...field} label="Ambiente">
+                                    <FormControl
+                                        fullWidth
+                                        error={!!errors.id_ambiente}
+                                        sx={{ mb: 2 }}
+                                    >
+                                        <InputLabel>Ambientes Disponíveis</InputLabel>
+                                        <Select
+                                            {...field}
+                                            label="Ambientes Disponíveis"
+                                            onChange={(e) => {
+                                                field.onChange(e); // Atualiza o valor no formulário
+                                                handleAmbienteChange(e.target.value); // Chama a função para atualizar a lógica de ambientes
+                                            }}
+                                        >
                                             <MenuItem value="">Selecione o Ambiente</MenuItem>
                                             {ambientes.map((ambiente) => (
                                                 <MenuItem key={ambiente.id} value={ambiente.id}>{ambiente.nome}</MenuItem>
                                             ))}
                                         </Select>
                                         {errors && (
-                                            <FormHelperText>{errors?.ambiente_id?.message}</FormHelperText>
+                                            <FormHelperText>{errors?.id_ambiente?.message}</FormHelperText>
                                         )}
                                     </FormControl>
                                 )}
@@ -316,23 +340,69 @@ export default function GerenciarReservas() {
                                             displayStaticWrapperAs="desktop" // Mantém o DatePicker estático
                                             value={selectedDate}
                                             disablePast
+                                            minDate={dayjs().add(1, 'day')}
                                             maxDate={dayjs().add(30, 'day')}
                                             onChange={(date) => {
                                                 field.onChange(date);
                                                 handleDateChange(date);
                                             }}
                                             shouldDisableDate={(date: Dayjs) => {
-                                                // Datas específicas para desabilitar
-                                                const disabledDates = [
-                                                    '2024-12-25',
-                                                    '2024-12-29'
-                                                ];
-                                                return disabledDates.includes(date.format('YYYY-MM-DD'));
+                                                return disableDates.includes(date.format('YYYY-MM-DD'));
                                             }}
                                         />
                                     )}
                                 />
                             </LocalizationProvider>
+
+                            {isEdit && (
+                                <Box sx={{ mb: 5, justifyContent: 'center', display: 'flex' }}>
+                                    <Paper
+                                        elevation={0}
+                                        sx={{
+                                            px: 3,
+                                            py: 1.5,
+                                            backgroundColor: 'primary.main',
+                                            borderRadius: 2
+                                        }}
+                                    >
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            alignItems="center"
+                                        >
+                                            <AccessTimeIcon
+                                                sx={{
+                                                    color: 'white',
+                                                    fontSize: '1.5rem'
+                                                }}
+                                            />
+                                            <Typography
+                                                variant="h6"
+                                                sx={{
+                                                    color: 'white',
+                                                    fontWeight: 500,
+                                                    lineHeight: 1
+                                                }}
+                                            >
+                                                {horarioSalvo ? (
+                                                    <>
+                                                        Horário Atual:&nbsp;
+                                                        <Box
+                                                            component="span"
+                                                            sx={{
+                                                                fontWeight: 600,
+                                                                color: 'white'
+                                                            }}
+                                                        >
+                                                            {horarioSalvo}
+                                                        </Box>
+                                                    </>
+                                                ) : ''}
+                                            </Typography>
+                                        </Stack>
+                                    </Paper>
+                                </Box>
+                            )}
 
                             <Divider sx={{ mt: 0, mb: 2, color: 'black' }} >
                                 <Typography variant="h5" gutterBottom sx={{ textAlign: 'center' }}>
@@ -349,20 +419,26 @@ export default function GerenciarReservas() {
                                         {availableTimes.length > 0 && (
                                             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2, justifyContent: 'center', maxWidth: '70%' }}>
-                                                    {availableTimes.map((time) => (
-                                                        <Grid key={time} size={{ xs: 6, sm: 6, md: 3 }}>
-                                                            <Button
-                                                                key={time}
-                                                                size="large"
-                                                                variant={field.value === time ? 'contained' : 'outlined'}
-                                                                color={field.value === time ? 'primary' : 'info'}
-                                                                onClick={() => field.onChange(time)}
-                                                                fullWidth
-                                                            >
-                                                                {time}
-                                                            </Button>
-                                                        </Grid>
-                                                    ))}
+                                                    <Grid container spacing={2} justifyContent="center">
+                                                        {availableTimes.map((time, index) => (
+                                                            <Grid size={{ xs: 6, sm: 6, md: 4 }} key={`${time}-${index}`}>
+                                                                <Button
+                                                                    variant="outlined"
+                                                                    sx={{
+                                                                        backgroundColor: field.value === time ? 'primary.main' : 'transparent',
+                                                                        color: field.value === time ? 'common.white' : 'primary.main',
+                                                                        '&:hover': {
+                                                                            backgroundColor: field.value === time ? 'primary.dark' : 'rgba(0, 0, 0, 0.04)'
+                                                                        }
+                                                                    }}
+                                                                    onClick={() => {field.onChange(time)}}
+                                                                    fullWidth
+                                                                >
+                                                                    {time}
+                                                                </Button>
+                                                            </Grid>
+                                                        ))}
+                                                    </Grid>
                                                 </Box>
                                             </Box>
                                         )}
@@ -375,16 +451,27 @@ export default function GerenciarReservas() {
                                 )}
                             />
 
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                fullWidth
-                                size="large"
-                                sx={{ mt: 2 }}
-                            >
-                                Salvar
-                            </Button>
+                            <Box sx={{ display: { xs: 'block', md: 'flex' }, justifyContent: 'center', gap: 2, mt: 2 }}>
+                                <Button
+                                    type="button"
+                                    variant="outlined"
+                                    color="error"
+                                    size="large"
+                                    onClick={() => navigate('/reservas')}
+                                    sx={{ mt: 1, mb: 1, width: { xs: '100%', md: '50%' } }}
+                                >
+                                    Voltar
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    size="large"
+                                    sx={{ mt: 1, mb: 1, width: { xs: '100%', md: '50%' } }}
+                                >
+                                    Salvar
+                                </Button>
+                            </Box>
                         </Box>
                     </StyledPaper>
                 </Container>
@@ -392,3 +479,5 @@ export default function GerenciarReservas() {
         </>
     );
 }
+
+

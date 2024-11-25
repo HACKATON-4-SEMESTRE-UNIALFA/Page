@@ -27,284 +27,301 @@
       "nome": "Sala de Reuniões 1",
       "capacidade": 10,
       "status": "Disponível",
-      "equipamentos_disponiveis": "2 pc e microfone",
-      "descricao": "Ambiente para reuniões com capacidade para 10 pessoas."
+      "equipamentos_disponiveis": "2 pc e microfone"
     },
     {
       "id": 2,
       "nome": "Auditório",
       "capacidade": 10,
       "status": "Manutenção",
-      "equipamentos_disponiveis": "2 pc e microfone",
-      "descricao": "Ambiente para reuniões com capacidade para 10 pessoas."
+      "equipamentos_disponiveis": "2 pc e microfone"
     }
   ],
-  "horarios_funcionamento": [
+  "horarios": [
     {
-      "id": 6,
-      "ambiente_id": 1,
-      "horario": "05:00-06:00"
-    },
-    {
-      "id": 10,
-      "ambiente_id": 1,
-      "horario": "09:00-10:00"
-    },
-    {
-      "id": 15,
-      "ambiente_id": 1,
-      "horario": "14:00-15:00"
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "00:00-01:00",
-      "id": 25
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "04:00-05:00",
-      "id": 26
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "06:00-07:00",
-      "id": 27
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "01:00-02:00",
-      "id": 28
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "05:00-06:00",
-      "id": 29
-    },
-    {
-      "ambiente_id": "2",
+      "id_ambiente": "2",
       "horario": "07:00-08:00",
       "id": 30
     },
     {
-      "ambiente_id": "2",
-      "horario": "08:00-09:00",
-      "id": 31
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "09:00-10:00",
-      "id": 32
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "10:00-11:00",
-      "id": 33
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "11:00-12:00",
-      "id": 34
-    },
-    {
-      "ambiente_id": "2",
+      "id_ambiente": "2",
       "horario": "12:00-13:00",
       "id": 35
     },
     {
-      "ambiente_id": "2",
-      "horario": "13:00-14:00",
-      "id": 36
-    },
-    {
-      "ambiente_id": "2",
+      "id_ambiente": "2",
       "horario": "02:00-03:00",
       "id": 37
     },
     {
-      "ambiente_id": "2",
-      "horario": "03:00-04:00",
-      "id": 38
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "14:00-15:00",
-      "id": 39
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "15:00-16:00",
-      "id": 40
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "16:00-17:00",
-      "id": 41
-    },
-    {
-      "ambiente_id": "2",
+      "id_ambiente": "2",
       "horario": "17:00-18:00",
       "id": 42
     },
     {
-      "ambiente_id": "2",
-      "horario": "18:00-19:00",
-      "id": 43
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "19:00-20:00",
-      "id": 44
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "20:00-21:00",
-      "id": 45
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "21:00-22:00",
-      "id": 46
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "22:00-23:00",
-      "id": 47
-    },
-    {
-      "ambiente_id": "2",
-      "horario": "23:00-00:00",
-      "id": 48
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "00:00-01:00",
-      "id": 49
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "04:00-05:00",
-      "id": 50
-    },
-    {
-      "ambiente_id": "1",
+      "id_ambiente": "1",
       "horario": "06:00-07:00",
       "id": 51
     },
     {
-      "ambiente_id": "1",
-      "horario": "07:00-08:00",
-      "id": 52
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "08:00-09:00",
-      "id": 53
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "01:00-02:00",
-      "id": 54
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "10:00-11:00",
-      "id": 55
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "11:00-12:00",
-      "id": 56
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "03:00-04:00",
-      "id": 57
-    },
-    {
-      "ambiente_id": "1",
+      "id_ambiente": "1",
       "horario": "12:00-13:00",
       "id": 58
     },
     {
-      "ambiente_id": "1",
+      "id_ambiente": "1",
       "horario": "13:00-14:00",
       "id": 59
     },
     {
-      "ambiente_id": "1",
-      "horario": "15:00-16:00",
-      "id": 60
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "16:00-17:00",
-      "id": 61
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "17:00-18:00",
-      "id": 62
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "18:00-19:00",
-      "id": 63
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "02:00-03:00",
-      "id": 64
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "19:00-20:00",
-      "id": 65
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "20:00-21:00",
-      "id": 66
-    },
-    {
-      "ambiente_id": "1",
+      "id_ambiente": "2",
       "horario": "21:00-22:00",
-      "id": 67
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "22:00-23:00",
-      "id": 68
-    },
-    {
-      "ambiente_id": "1",
-      "horario": "23:00-00:00",
-      "id": 69
+      "id": 60
     }
   ],
   "reservas": [
     {
       "id": 1,
-      "ambiente_id": 1,
+      "id_ambiente": 1,
       "horario": "09:00-10:00",
       "data": "2024-11-20",
-      "usuario_id": 1,
-      "status": "pendente"
+      "id_usuario": 1,
+      "status": "ativa"
     },
     {
       "id": 2,
-      "ambiente_id": 1,
+      "id_ambiente": 1,
       "horario": "10:00-11:00",
       "data": "2024-11-20",
-      "usuario_id": 1,
-      "status": "pendente"
+      "id_usuario": 1,
+      "status": "cancelada"
     },
     {
       "id": 3,
-      "ambiente_id": 2,
+      "id_ambiente": 2,
       "horario": "14:00-15:00",
       "data": "2024-11-21",
-      "usuario_id": 1,
-      "status": "pendente"
+      "id_usuario": 2,
+      "status": "confirmada"
+    }
+  ],
+  "historico": [
+    {
+      "id": 1,
+      "id_reserva": 1,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2024-12-23",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:00Z"
+    },
+    {
+      "id": 2,
+      "id_reserva": 1,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2024-12-24",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:01Z"
+    },
+    {
+      "id": 3,
+      "id_reserva": 1,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2024-12-25",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:02Z"
+    },
+    {
+      "id": 4,
+      "id_reserva": 1,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2024-12-26",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:03Z"
+    },
+    {
+      "id": 5,
+      "id_reserva": 1,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2024-12-27",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:04Z"
+    },
+    {
+      "id": 6,
+      "id_reserva": 2,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2024-12-28",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:05Z"
+    },
+    {
+      "id": 7,
+      "id_reserva": 2,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2024-12-29",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:06Z"
+    },
+    {
+      "id": 8,
+      "id_reserva": 2,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2024-12-30",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:07Z"
+    },
+    {
+      "id": 9,
+      "id_reserva": 2,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2024-12-31",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:08Z"
+    },
+    {
+      "id": 10,
+      "id_reserva": 2,
+      "nome_alteracao": "Gabriel tester",
+      "ambiente": "Teste",
+      "horario": "19:00-20:00",
+      "data": "2025-01-01",
+      "status": "ativo",
+      "created_at": "2024-11-22T12:00:09Z"
+    }
+  ],
+  "notificacoes": [
+    {
+      "id": 1,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "confirmacao",
+      "id_usuario": 1,
+      "mensagem": "Sua reserva foi confirmada com sucesso.",
+      "created_at": "2024-11-23T08:00:00Z",
+      "visualizacao": true
+    },
+    {
+      "id": 2,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "cancelamento",
+      "id_usuario": 2,
+      "mensagem": "A sua reserva foi cancelada devido a problemas no sistema.",
+      "created_at": "2024-11-22T09:30:00Z",
+      "visualizacao": false
+    },
+    {
+      "id": 3,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "lembrete",
+      "id_usuario": 3,
+      "mensagem": "Lembrete: Sua reserva está para acontecer amanhã.",
+      "created_at": "2024-11-22T10:00:00Z",
+      "visualizacao": true
+    },
+    {
+      "id": 4,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "confirmacao",
+      "id_usuario": 4,
+      "mensagem": "Sua reserva foi confirmada para o dia 25 de novembro.",
+      "created_at": "2024-11-21T11:15:00Z",
+      "visualizacao": false
+    },
+    {
+      "id": 5,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "cancelamento",
+      "id_usuario": 5,
+      "mensagem": "A reserva foi cancelada por falta de pagamento.",
+      "created_at": "2024-11-20T12:00:00Z",
+      "visualizacao": false
+    },
+    {
+      "id": 6,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "lembrete",
+      "id_usuario": 6,
+      "mensagem": "Lembrete: Você tem uma reserva marcada para o dia 30 de novembro.",
+      "created_at": "2024-11-19T14:30:00Z",
+      "visualizacao": true
+    },
+    {
+      "id": 7,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "confirmacao",
+      "id_usuario": 7,
+      "mensagem": "Sua reserva foi confirmada para o evento de amanhã.",
+      "created_at": "2024-11-23T07:00:00Z",
+      "visualizacao": true
+    },
+    {
+      "id": 8,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "cancelamento",
+      "id_usuario": 8,
+      "mensagem": "Infelizmente, sua reserva foi cancelada devido à sobrecarga de eventos.",
+      "created_at": "2024-11-18T13:00:00Z",
+      "visualizacao": false
+    },
+    {
+      "id": 9,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "lembrete",
+      "id_usuario": 9,
+      "mensagem": "Lembrete: Sua reserva para a reunião de amanhã precisa ser confirmada.",
+      "created_at": "2024-11-23T08:30:00Z",
+      "visualizacao": false
+    },
+    {
+      "id": 10,
+      "reserva": "Ambiente, data, horário",
+      "tipo": "confirmacao",
+      "id_usuario": 10,
+      "mensagem": "Sua reserva para o evento foi confirmada para o dia 26 de novembro.",
+      "created_at": "2024-11-23T09:45:00Z",
+      "visualizacao": true
+    }
+  ],
+  "blacklist": [
+    {
+      "id": 1,
+      "data": "2024-11-22",
+      "created_at": "2024-11-22T12:00:05Z"
+    }
+  ],
+  "whitelist": [
+    {
+      "id": 1,
+      "data": "2024-10-22",
+      "created_at": "2024-11-22T12:00:05Z"
+    },
+    {
+      "id": 2,
+      "data": "2024-10-22",
+      "created_at": "2024-11-22T12:00:05Z"
+    },
+    {
+      "id": 3,
+      "data": "2024-10-22",
+      "created_at": "2024-11-22T12:00:05Z"
     }
   ]
+
 }

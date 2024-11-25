@@ -1,74 +1,77 @@
-import { useNavigate } from "react-router-dom"
-import { useCallback, useEffect, useState } from "react"
-import { verificaTokenExpirado } from "../../services/token"
-import { Loading } from "../../components/Loading"
-import axios from "axios"
+import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { verificaTokenExpirado } from "../../services/token";
+import { Loading } from "../../components/Loading";
+import axios from "axios";
 import {
     Container,
     Typography,
     Button,
     Box,
-    IconButton
-} from '@mui/material'
+    IconButton,
+    Chip
+} from '@mui/material';
 import {
     DataGrid,
     GridColDef,
     GridRenderCellParams
-} from '@mui/x-data-grid'
-import { ptBR } from '@mui/x-data-grid/locales'
-import AddIcon from '@mui/icons-material/Add'
-import EditIcon from '@mui/icons-material/Edit'
-import DeleteIcon from '@mui/icons-material/Delete'
-import { LayoutDashboard } from "../../components/LayoutDashboard"
-import { ConfirmationDialog } from "../../components/Dialog"
-import { SnackbarMui } from "../../components/Snackbar"
-import { IToken } from "../../interfaces/token"
+} from '@mui/x-data-grid';
+import { ptBR } from '@mui/x-data-grid/locales';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { LayoutDashboard } from "../../components/LayoutDashboard";
+import { ConfirmationDialog } from "../../components/Dialog";
+import { SnackbarMui } from "../../components/Snackbar";
+import { IToken } from "../../interfaces/token";
 
 
 interface IUsers {
-    id: number
-    nome: string
-    email: string
-    perfil: string
-    senha: string
+    id: number;
+    nome: string;
+    email: string;
+    telefone: string;
+    cpf: string;
+    isAdmin: boolean;
 }
 
 export default function Usuarios() {
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [message, setMessage] = useState("");
     const [severity, setSeverity] = useState<"success" | "error" | "info" | "warning">("info");
-    const navigate = useNavigate()
-    const [loading, setLoading] = useState(false)
-    const [dadosUsers, setdadosUsers] = useState<Array<IUsers>>([])
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [dadosUsers, setdadosUsers] = useState<Array<IUsers>>([]);
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
-    })
+    });
     const [dialogState, setDialogState] = useState({
         open: false,
         id: null as number | null
-    })
+    });
 
-    const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken
+    const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken;
 
     useEffect(() => {
-
         if (localStorage.length == 0 || verificaTokenExpirado()) {
-            navigate("/")
+            navigate("/");
         }
 
-        setLoading(true)
-        axios.get(import.meta.env.VITE_URL + '/users', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+        setLoading(true);
+
+        axios.get(import.meta.env.VITE_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
-                setdadosUsers(res.data.data)
-                setLoading(false)
+                console.log(res.data);
+                setdadosUsers(res.data.usuario);
+                setLoading(false);
             })
             .catch((err) => {
-                setLoading(false)
-                handleShowSnackbar(err.response.data, 'error')
-                setdadosUsers(err)
-            })
-    }, [])
+                setLoading(false);
+                handleShowSnackbar(err.response.data, 'error');
+                setdadosUsers(err);
+            });
+    }, []);
 
     const handleShowSnackbar = useCallback((
         message: string,
@@ -87,41 +90,84 @@ export default function Usuarios() {
             filterable: false,
             sortable: false,
             headerAlign: 'center',
-            align: 'center'
+            align: 'center',
         },
         {
             field: 'nome',
             headerName: 'Nome',
             width: 250,
             filterable: true,
+            headerAlign: 'left',
+            align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%' }}>
+                    {params.value}
+                </Typography>
+            ),
         },
         {
             field: 'email',
             headerName: 'E-mail',
-            width: 200,
+            width: 250,
             filterable: true,
-            headerAlign: 'center',
+            headerAlign: 'left',
             align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%' }}>
+                    {params.value}
+                </Typography>
+            ),
         },
         {
-            field: 'perfil',
-            headerName: 'Perfil',
-            width: 200,
+            field: 'telefone',
+            headerName: 'Telefone',
+            width: 150,
             filterable: true,
             headerAlign: 'center',
             align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
+                    {params.value}
+                </Typography>
+            ),
+        },
+        {
+            field: 'cpf',
+            headerName: 'CPF',
+            width: 180,
+            filterable: true,
+            headerAlign: 'center',
+            align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
+                    {params.value}
+                </Typography>
+            ),
+        },
+        {
+            field: 'isAdmin',
+            headerName: 'Administrador',
+            width: 120,
+            filterable: true,
+            headerAlign: 'center',
+            align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                    <Chip label={params.value ? 'Sim' : 'Não'} />
+                </Box>
+            ),
         },
         {
             field: 'acoes',
             headerName: 'Ações',
             flex: 2,
-            minWidth: 150, 
+            minWidth: 150,
             filterable: false,
             sortable: false,
             headerAlign: 'center',
             align: 'center',
             renderCell: (params: GridRenderCellParams) => (
-                <Box >
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
                     <IconButton
                         color="primary"
                         onClick={() => navigate(`/usuarios/${params.row.id}`)}
@@ -139,7 +185,8 @@ export default function Usuarios() {
                 </Box>
             ),
         },
-    ]
+    ];
+
 
     const removeUser = useCallback((id: number) => {
         setDialogState({
@@ -155,13 +202,13 @@ export default function Usuarios() {
             .then(() => {
                 handleShowSnackbar("Usuário removido com sucesso", "success");
                 setdadosUsers((prevRows) => prevRows.filter((row) => row.id !== id));
-                setLoading(false)
+                setLoading(false);
             })
             .catch((error) => {
                 const errorMessage = error.response?.data || "Erro ao remover usuário";
-                setLoading(false)
+                setLoading(false);
                 handleShowSnackbar(errorMessage, "error");
-            })
+            });
     }, [dialogState.id, setLoading]);
 
     return (
@@ -213,13 +260,16 @@ export default function Usuarios() {
                             disableColumnResize
                             disableRowSelectionOnClick
                             sx={{
-                                height: 400,
+                                height: 450,
                                 boxShadow: 2,
                                 border: 2,
                                 borderColor: 'primary.light',
                                 '& .MuiDataGrid-cell': {
                                     overflow: 'visible',
                                     textOverflow: 'clip',
+                                    display: 'flex',
+                                    alignItems: 'center', // Centraliza verticalmente
+                                    justifyContent: 'center', // Centraliza horizontalmente
                                 },
                                 '& .MuiDataGrid-cell:hover': {
                                     color: 'primary.main',
@@ -241,11 +291,12 @@ export default function Usuarios() {
                                 '& .MuiTablePagination-root': {
                                     overflow: 'hidden',
                                 }
+                        
                             }}
                         />
                     </Box>
                 </Container>
             </LayoutDashboard>
         </>
-    )
+    );
 }

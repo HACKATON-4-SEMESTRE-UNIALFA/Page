@@ -9,27 +9,33 @@ import {
     Button,
     Box,
     IconButton,
-    Avatar
+    Avatar,
+    Tooltip,
+    Chip
 } from '@mui/material'
 import {
     DataGrid,
     GridColDef,
     GridValueGetter,
-    GridRenderCellParams
+    GridRenderCellParams,
+    GridAlignment
 } from '@mui/x-data-grid'
 import { ptBR } from '@mui/x-data-grid/locales'
 import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import HistoryIcon from '@mui/icons-material/History';
 import { LayoutDashboard } from "../../components/LayoutDashboard"
 import { ConfirmationDialog } from "../../components/Dialog"
 import { SnackbarMui } from "../../components/Snackbar"
 import { IToken } from "../../interfaces/token"
 import { GridInitialStateCommunity } from "@mui/x-data-grid/models/gridStateCommunity"
+import ModalHist from "../../components/ModalHist"
+import ModalCanReserva from "../../components/ModalCanReserva"
 
 interface IReserva {
     id: number
-    ambiente_id: number
+    id_ambiente: number
     horario: string
     data: string
     usuario_id: number
@@ -37,6 +43,11 @@ interface IReserva {
 }
 
 interface IAmbiente {
+    id: number
+    nome: string
+}
+
+interface IUsuario {
     id: number
     nome: string
 }
@@ -49,14 +60,20 @@ export default function Reservas() {
     const [loading, setLoading] = useState(false)
     const [dadosReservas, setDadosReservas] = useState<Array<IReserva>>([])
     const [ambientes, setAmbientes] = useState<Map<number, string>>(new Map())
+    const [usuarios, setUsuarios] = useState<Map<number, string>>(new Map())
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [historico, setHistorico] = useState([]);
+    const [openModal, setOpenModal] = useState(false);
+    const [modalAberto, setModalAberto] = useState(false);
+    const [idReservaSelecionada, setIdReservaSelecionada] = useState<number | null>(null);
+
+
+
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
     })
-    const [dialogState, setDialogState] = useState({
-        open: false,
-        id: null as number | null
-    })
+
 
     const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken
 
@@ -71,23 +88,63 @@ export default function Reservas() {
         axios.get(import.meta.env.VITE_URL + '/ambientes', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
                 const ambienteMap = new Map<number, string>()
-                res.data.forEach((ambiente: IAmbiente) => {
+                res.data.ambiente.forEach((ambiente: IAmbiente) => {
                     ambienteMap.set(ambiente.id, ambiente.nome)
                 })
                 setAmbientes(ambienteMap)
             })
             .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"))
 
-        axios.get(import.meta.env.VITE_URL + '/reservas?usuario_id=' + token.user.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
-            .then((res) => {
-                setDadosReservas(res.data)
-                setLoading(false)
-            })
-            .catch((err) => {
-                setDadosReservas(err)
-                setLoading(false)
-            })
-    }, [])
+        // Busca reservas
+        if (token.usuario.isAdmin) {
+            // Busca Usuarios
+            axios.get(import.meta.env.VITE_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+                .then((res) => {
+                    const usuarioMap = new Map<number, string>()
+                    res.data.usuario.forEach((usuario: IUsuario) => {
+                        usuarioMap.set(usuario.id, usuario.nome)
+                    })
+                    setUsuarios(usuarioMap)
+                })
+                .catch((err) => {
+                    console.error(err)
+                    handleShowSnackbar("Erro ao buscar Usuários", "error")
+                })
+
+            axios.get(import.meta.env.VITE_URL + '/reservas', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+                .then((res) => {
+                    setDadosReservas(res.data.reserva)
+                    setLoading(false)
+                })
+                .catch((err) => {
+                    setDadosReservas(err)
+                    setLoading(false)
+                })
+        } else {
+            axios.get(import.meta.env.VITE_URL + '/reservas?id_usuario=' + token.usuario.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+                .then((res) => {
+                    setDadosReservas(res.data)
+                    setLoading(false)
+                })
+                .catch((err) => {
+                    setDadosReservas(err)
+                    setLoading(false)
+                })
+        }
+    }, [refreshKey])
+
+    const abrirModal = useCallback((id: number) => {
+        setIdReservaSelecionada(id);
+        setModalAberto(true);
+    }, []);
+
+    const fecharModal = useCallback(() => {
+        setModalAberto(false);
+        setIdReservaSelecionada(null);
+    }, []);
+
+    const handleOpen = useCallback(() => setOpenModal(true), []);
+    const handleClose = useCallback(() => setOpenModal(false), []);
 
     const handleShowSnackbar = useCallback((
         message: string,
@@ -108,8 +165,21 @@ export default function Reservas() {
             headerAlign: 'center',
             align: 'center'
         },
+        ...(token.usuario.isAdmin
+            ? [
+                {
+                    field: 'id_usuario',
+                    headerName: 'Criado por',
+                    width: 150,
+                    filterable: true,
+                    headerAlign: 'center' as GridAlignment,
+                    align: 'center' as GridAlignment,
+                    valueGetter: (params: number) => usuarios.get(params) || "Desconhecido",
+                },
+            ]
+            : []),
         {
-            field: 'ambiente_id',
+            field: 'id_ambiente',
             headerName: 'Ambiente',
             width: 200,
             filterable: true,
@@ -141,6 +211,26 @@ export default function Reservas() {
             filterable: true,
             headerAlign: 'center',
             align: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '100%',
+                    }}
+                >
+                    <Chip
+                        label={params.value}
+                        color={
+                            params.value === 'Finalizado' ? 'success' :
+                                params.value === 'Cancelado' ? 'error' :
+                                    params.value === 'Ativo' ? 'warning' :
+                                        'info'
+                        }
+                    />
+                </Box>
+            ),
         },
         {
             field: 'acoes',
@@ -151,54 +241,97 @@ export default function Reservas() {
             sortable: false,
             headerAlign: 'center',
             align: 'center',
-            renderCell: (params: GridRenderCellParams) => (
-                <Box >
-                    <IconButton
-                        color="primary"
-                        onClick={() => navigate(`/reservas/${params.row.id}`)}
-                        size="large"
-                    >
-                        <EditIcon />
-                    </IconButton>
-                    <IconButton
-                        color="error"
-                        size="large"
-                        onClick={() => cancelaReserva(params.row.id)}
-                    >
-                        <DeleteIcon />
-                    </IconButton>
-                </Box>
-            ),
+            renderCell: (params: GridRenderCellParams) => {
+                if (params.row.status !== 'ativo') {
+                    return (
+                        <Box >
+                            <Tooltip title="Histórico" placement="top" arrow>
+                                <IconButton
+                                    color="info"
+                                    size="large"
+                                    onClick={() => fetchHistorico(params.row.id)}
+                                >
+                                    <HistoryIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </Box >
+                    );
+                }
+
+                return (
+                    <Box >
+                        <Tooltip title="Editar" placement="top" arrow>
+                            <IconButton
+                                color="primary"
+                                onClick={() => navigate(`/reservas/${params.row.id}`)}
+                                size="large"
+                            >
+                                <EditIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Cancelar" placement="top" arrow>
+                            <IconButton
+                                color="error"
+                                size="large"
+                                onClick={() => abrirModal(params.row.id)}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Histórico" placement="top" arrow>
+                            <IconButton
+                                color="info"
+                                size="large"
+                                onClick={() => fetchHistorico(params.row.id)}
+                            >
+                                <HistoryIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </Box >
+                );
+            },
         },
     ]
 
-    const cancelaReserva = useCallback((id: number) => {
 
-        setDialogState({
-            open: true,
-            id: id
-        });
+    const fetchHistorico = useCallback(async (idReserva: number) => {
+        setLoading(true);
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_URL}/reserva/${idReserva}/historico`, { headers: { Authorization: `Bearer ${token.accessToken}` } });
+            setHistorico(response.data.historico);
+            handleOpen();
+            setLoading(false);
+        } catch (error) {
+            console.error(error);
+            setLoading(false);
+        }
     }, []);
 
-    const handleConfirmedDelete = useCallback(() => {
-        const id = dialogState.id;
+    const salvarCancelamento = useCallback(async (mensagem: string) => {
+        if (!idReservaSelecionada) return;
 
-        axios.delete(import.meta.env.VITE_URL + `/reservas/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
-            .then(() => {
-                handleShowSnackbar("Reserva cancelada com sucesso", "success");
-                setDadosReservas((prevRows) => prevRows.filter((row) => row.id !== id));
-                setLoading(false)
-            })
-            .catch((error) => {
-                const errorMessage = error.response?.data || "Erro ao cancelar Reserva";
-                setLoading(false)
-                handleShowSnackbar(errorMessage, "error");
-            })
-    }, [dialogState.id, setLoading]);
+        try {
+            await axios.put(`${import.meta.env.VITE_URL}/reservas/desativa/${idReservaSelecionada}/usuario/${token.usuario.id}`, {
+                mensagem
+            }, { headers: { Authorization: `Bearer ${token.accessToken}` } });
+            fecharModal(); // Fecha o modal após o sucesso
+            handleShowSnackbar("Reserva Cancelada realizado com sucesso!", "success");
+            setRefreshKey(refreshKey + 1)
+        } catch (error) {
+            fecharModal();
+            console.error("Erro ao salvar o cancelamento:", error);
+            handleShowSnackbar("Ocorreu um erro ao cancelar a reserva", "error");
+        }
+    }, [idReservaSelecionada, handleShowSnackbar, fecharModal]);
 
     return (
         <>
             <Loading visible={loading} />
+            <ModalHist
+                historico={historico}
+                open={openModal}
+                handleClose={handleClose}
+            />
             <LayoutDashboard>
                 <SnackbarMui
                     open={snackbarVisible}
@@ -211,16 +344,16 @@ export default function Reservas() {
                     }}
                 />
                 <Container maxWidth="xl" sx={{ mb: 4, mt: 3 }}>
-                    <ConfirmationDialog
-                        open={dialogState.open}
-                        title="Confirmar exclusão"
-                        message="Tem certeza que deseja cancelar esta Reserva ?"
-                        onConfirm={handleConfirmedDelete}
-                        onClose={() => setDialogState({ open: false, id: null })}
-                    />
+                    {idReservaSelecionada &&
+                        <ModalCanReserva
+                            open={modalAberto}
+                            handleClose={fecharModal}
+                            onSave={salvarCancelamento}
+                        />
+                    }
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                         <Typography variant="h4" component="h1">
-                            Reservas
+                            {token.usuario.isAdmin ? "Todas as Reservas" : "Minhas Reservas"}
                         </Typography>
                         <Button
                             variant="contained"
@@ -240,7 +373,7 @@ export default function Reservas() {
                             density="standard"
                             initialState={{
                                 sorting: {
-                                    sortModel: [{ field: 'data', sort: 'asc' }], // Ordenação inicial
+                                    sortModel: [{ field: 'data', sort: 'desc' }], // Ordenação inicial
                                 },
                             } as GridInitialStateCommunity}
                             paginationModel={paginationModel}

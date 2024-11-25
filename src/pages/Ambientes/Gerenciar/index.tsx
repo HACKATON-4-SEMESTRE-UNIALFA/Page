@@ -23,7 +23,8 @@ import { SnackbarMui } from "../../../components/Snackbar";
 import DropZone from "../../../components/Dropzone";
 import { Loading } from "../../../components/Loading";
 import { IToken } from "../../../interfaces/token";
-import { Stack } from "immutable";
+import { get, Stack } from "immutable";
+import { ConstructionOutlined } from "@mui/icons-material";
 
 interface IAmbientes {
     id: 0,
@@ -98,7 +99,7 @@ export default function GerenciarAmbientes() {
             setLoading(true);
             axios.get(import.meta.env.VITE_URL + `/ambientes/${ambienteId}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    const ambienteData = res.data;
+                    const ambienteData = res.data.ambiente;
                     setIsEdit(true);
                     setValue("id", ambienteData.id || 0);
                     setValue("nome", ambienteData.nome || '');
@@ -107,7 +108,7 @@ export default function GerenciarAmbientes() {
                     setValue("equipamentos_disponiveis", ambienteData.equipamentos_disponiveis || '');
                     setValue("descricao", ambienteData.descricao || '');
                     if (ambienteData.imagem) {
-                        setPreviewUrl(import.meta.env.VITE_URL + `/imagem/ambientes/${ambienteData.imagem}`);
+                        setPreviewUrl(import.meta.env.VITE_URL + `/imagens/${ambienteData.imagem}`);
                     }
                     setLoading(false)
                 })
@@ -137,15 +138,21 @@ export default function GerenciarAmbientes() {
         setLoading(true);
 
         const formData = new FormData();
-        formData.append('id', data.id?.toString() || '');
-        formData.append('nome', data.nome);
+        formData.append('nome', data.nome?.toString() || '');
         formData.append('capacidade', data.capacidade?.toString() || '');
-        formData.append('status', data.status);
-        formData.append('equipamentos_disponiveis', data.equipamentos_disponiveis);
-        formData.append('descricao', data.descricao);
+        formData.append('status', data.status?.toString() || '');
+        formData.append('equipamentos_disponiveis', data.equipamentos_disponiveis?.toString() || '');
         if (data.imagem) {
             formData.append('imagem', data.imagem);
         }
+
+        if (data.imagem) {
+            console.log('Nome da imagem:', data.imagem.name);
+            console.log('Tipo da imagem:', data.imagem.type);
+            console.log('Tamanho da imagem:', data.imagem.size);
+        }
+
+        console.log(formData)
 
         const config = {
             headers: {
@@ -154,13 +161,20 @@ export default function GerenciarAmbientes() {
             }
         };
 
+        for (const pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+
         const url = isEdit
             ? `${import.meta.env.VITE_URL}/ambientes/${id}`
             : `${import.meta.env.VITE_URL}/ambientes/`;
 
+
+
         const request = isEdit
             ? axios.post(url, formData, config)
             : axios.post(url, formData, config);
+
 
         request
             .then((response) => {
@@ -171,17 +185,22 @@ export default function GerenciarAmbientes() {
                     'success'
                 );
                 setLoading(false);
-                navigate('/horarios-funcionamento/' + response.data.id, {
+                console.log(response);
+                navigate('/horarios/' + response.data.ambiente.id, {
                     state: {
-                        setAmbiente: response.data
+                        snackbarMessage: "Ambiente " + getValues("nome") + " salvo com sucesso !",
+                        snackbarSeverity: "success"
                     }
                 });
             })
             .catch((error) => {
-                const errorMessage = error.response?.data || 'Erro ao processar a requisição';
+                console.log(error); // Mostra a resposta completa do servidor
+                const errorMessage = error.response?.data.message || 'Erro ao processar a requisição';
+                console.log(error.response?.data.errors); // Exibe os erros específicos de validação
                 setLoading(false);
                 handleShowSnackbar(errorMessage, 'error');
             });
+
     }, [isEdit, id, navigate]);
 
 
@@ -284,7 +303,6 @@ export default function GerenciarAmbientes() {
                             <Controller
                                 name="imagem"
                                 control={control}
-                                rules={{ required: 'Imagem é obrigatória!' }}
                                 render={({ field: { onChange } }) => (
                                     <DropZone
                                         previewUrl={previewUrl}
@@ -320,7 +338,7 @@ export default function GerenciarAmbientes() {
                                     fullWidth
                                     size="large"
                                     sx={{ mt: 2 }}
-                                    onClick={() => navigate("/horarios-funcionamento/" + id)}
+                                    onClick={() => navigate("/horarios/" + id)}
                                 >
                                     Editar Horários de Funcionamento
                                 </Button>

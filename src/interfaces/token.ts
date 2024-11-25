@@ -1,6 +1,6 @@
 export interface IToken {
     accessToken: string
-    user: {
+    usuario: {
         id: number
         nome: string
         email: string
