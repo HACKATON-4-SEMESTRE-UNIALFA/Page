@@ -20,6 +20,9 @@ import { SnackbarMui } from "../../components/Snackbar";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios from "axios";
+import { IToken } from "../../interfaces/token";
+import { verificaTokenExpirado } from "../../services/token";
+import { useNavigate } from "react-router-dom";
 
 interface IBlacklist {
     id: number;
@@ -31,7 +34,8 @@ export default function Blacklist() {
     const [message, setMessage] = useState("");
     const [severity, setSeverity] = useState<"success" | "error" | "info" | "warning">("info");
     const [loading, setLoading] = useState(false);
-    const [blacklistData, setBlacklistData] = useState<Array<IBlacklist>>([]);
+    const [blacklistData, setBlacklistData] = useState<IBlacklist[]>([]);
+    const navigate = useNavigate();
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
@@ -40,6 +44,9 @@ export default function Blacklist() {
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [selectedDate, setSelectedDate] = useState<string>("");
 
+    const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken
+
+  
     const handleShowSnackbar = useCallback((
         message: string,
         severity: 'success' | 'error' | 'warning' | 'info'
@@ -47,62 +54,123 @@ export default function Blacklist() {
         setSnackbarVisible(true);
         setMessage(message);
         setSeverity(severity);
-    }, [setSnackbarVisible, setMessage, setSeverity]);
+    }, []);
+
+    const fetchBlacklistData = useCallback(() => {
+        setLoading(true);
+        axios.get(import.meta.env.VITE_URL + '/blacklist', { 
+            headers: { Authorization: `Bearer ${token.accessToken}` } 
+        })
+        .then((res) => {
+            // Ensure data is an array and has the correct type
+            const data = Array.isArray(res.data.blackList) 
+                ? res.data.blackList.map((item: { id: any; data: any; }) => ({
+                    id: item.id || 0,
+                    data: item.data || ''
+                }))
+                : [];
+            setBlacklistData(data);
+            setLoading(false);
+        })
+        .catch((err) => {
+            setLoading(false);
+            console.error(err); 
+            handleShowSnackbar(
+                err.response?.data || "Erro ao carregar dados", 
+                'error'
+            );
+        });
+    }, [token.accessToken, handleShowSnackbar]);
 
     useEffect(() => {
-        setLoading(true);
-
-        axios.get(import.meta.env.VITE_URL + '/blacklist')
-            .then((res) => {
-                setBlacklistData(res.data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                setLoading(false);
-                handleShowSnackbar(err.response?.data || "Erro ao carregar dados", 'error');
-            });
-    }, []);
+        if (localStorage.length === 0 || verificaTokenExpirado()) {
+            navigate("/");
+        }
+        fetchBlacklistData();
+    }, [fetchBlacklistData]);
 
     const handleEditDate = useCallback((id: number, date: string) => {
         setSelectedId(id);
         setSelectedDate(date);
-    }, [setSelectedId, setSelectedDate]);
+    }, []);
 
     const handleSaveDate = useCallback(() => {
-        if (!selectedId) return;
+        // Validate date
+        if (!selectedDate) {
+            handleShowSnackbar("Por favor, selecione uma data válida", "error");
+            return;
+        }
 
         setLoading(true);
 
-        axios.put(`${import.meta.env.VITE_URL}/blacklist/${selectedId}`, { data: selectedDate })
-            .then(() => {
-                setBlacklistData((prev) =>
-                    prev.map((item) =>
-                        item.id === selectedId ? { ...item, data: selectedDate } : item
-                    )
+        const saveMethod = selectedId 
+            ? () => axios.put(`${import.meta.env.VITE_URL}/blacklist/${selectedId}`, 
+                { data: selectedDate }, 
+                { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            : () => axios.post(`${import.meta.env.VITE_URL}/blacklist`, 
+                { data: selectedDate }, 
+                { headers: { Authorization: `Bearer ${token.accessToken}` } });
+
+        saveMethod()
+        .then((res) => {
+            setBlacklistData(prevData => {
+                // If creating a new entry
+                if (!selectedId) {
+                    return [...prevData, { 
+                        id: res.data.id || (prevData.length > 0 ? Math.max(...prevData.map(d => d.id)) + 1 : 1),
+                        data: res.data.blackList.data || selectedDate 
+                    }];
+                }
+
+                // If updating existing entry
+                return prevData.map(item => 
+                    item.id === selectedId 
+                        ? { ...item, data: selectedDate }
+                        : item
                 );
-                handleShowSnackbar("Data atualizada com sucesso!", "success");
-                setSelectedId(null);
-                setSelectedDate("");
-            })
-            .catch((err) => {
-                handleShowSnackbar(err.response?.data || "Erro ao atualizar a data", "error");
-            })
-            .finally(() => setLoading(false));
-    }, [selectedId, selectedDate, setLoading, handleShowSnackbar]);
+            });
+
+            handleShowSnackbar(
+                selectedId ? "Data atualizada com sucesso!" : "Data cadastrada com sucesso!", 
+                "success"
+            );
+            
+            // Reset form
+            setSelectedId(null);
+            setSelectedDate("");
+        })
+        .catch((err) => {
+            handleShowSnackbar(
+                err.response?.data || (selectedId ? "Erro ao atualizar a data" : "Erro ao cadastrar a data"), 
+                "error"
+            );
+        })
+        .finally(() => setLoading(false));
+    }, [selectedId, selectedDate, token.accessToken, handleShowSnackbar]);
 
     const handleDeleteDate = useCallback((id: number) => {
         setLoading(true);
 
-        axios.delete(`${import.meta.env.VITE_URL}/blacklist/${id}`)
-            .then(() => {
-                setBlacklistData((prev) => prev.filter((item) => item.id !== id));
-                handleShowSnackbar("Data excluída com sucesso!", "success");
-            })
-            .catch((err) => {
-                handleShowSnackbar(err.response?.data || "Erro ao excluir a data", "error");
-            })
-            .finally(() => setLoading(false));
-    }, [setLoading, handleShowSnackbar]);
+        axios.delete(`${import.meta.env.VITE_URL}/blacklist/${id}`, {
+            headers: { Authorization: `Bearer ${token.accessToken}` }
+        })
+        .then(() => {
+            setBlacklistData(prevData => 
+                // Ensure prevData is an array before filtering
+                Array.isArray(prevData) 
+                    ? prevData.filter((item) => item.id !== id)
+                    : []
+            );
+            handleShowSnackbar("Data excluída com sucesso!", "success");
+        })
+        .catch((err) => {
+            handleShowSnackbar(
+                err.response?.data || "Erro ao excluir a data", 
+                "error"
+            );
+        })
+        .finally(() => setLoading(false));
+    }, [token.accessToken, handleShowSnackbar]);
 
     const columns: GridColDef[] = [
         {
@@ -132,7 +200,7 @@ export default function Blacklist() {
             align: 'center',
             renderCell: (params: GridRenderCellParams) => (
                 <Typography noWrap sx={{ textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
-                    {new Date(params.value).toLocaleDateString('pt-BR')}
+                    {params.value ? new Date(params.value + 'T00:00:00').toLocaleDateString('pt-BR') : ''}
                 </Typography>
             ),
         },
@@ -146,14 +214,12 @@ export default function Blacklist() {
             align: 'center',
             renderCell: (params: GridRenderCellParams) => (
                 <Box display="flex" justifyContent="center" gap={1}>
-                    {/* Botão de editar */}
                     <IconButton
                         color="primary"
                         onClick={() => handleEditDate(params.row.id, params.row.data)}
                     >
                         <EditIcon />
                     </IconButton>
-                    {/* Botão de excluir */}
                     <IconButton
                         color="error"
                         onClick={() => handleDeleteDate(params.row.id)}
@@ -182,32 +248,30 @@ export default function Blacklist() {
                 <Container maxWidth="xl" sx={{ mb: 4, mt: 3 }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                         <Typography variant="h4" component="h1">
-                            Blacklist de Datas
+                            Bloqueio de Datas
                         </Typography>
                     </Box>
 
-                    {/* Campo de edição */}
-                    {selectedId && (
-                        <Box display="flex" alignItems="center" gap={2} mb={3}>
-                            <TextField
-                                label="Editar Data"
-                                value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value)}
-                                fullWidth
-                                type="date"
-                            />
-                            <Button variant="contained" color="primary" onClick={handleSaveDate}>
-                                Salvar
-                            </Button>
-                        </Box>
-                    )}
+                    <Box display="flex" alignItems="center" gap={2} mb={3}>
+                        <TextField
+                            label="Data"
+                            value={selectedDate || ''}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            fullWidth
+                            type="date"
+                            InputLabelProps={{ shrink: true }}
+                        />
+                        <Button sx={{ height: 55 }} variant="contained" color="primary" onClick={handleSaveDate}>
+                            Salvar
+                        </Button>
+                    </Box>
 
                     <Box sx={{ width: '100%' }}>
                         <DataGrid
                             rows={blacklistData}
                             columns={columns}
-                            rowHeight={60}
-                            density="standard"
+                            rowHeight={35}
+                            density="comfortable"
                             paginationModel={paginationModel}
                             onPaginationModelChange={setPaginationModel}
                             pageSizeOptions={[10, 25, 50, { value: -1, label: 'Todos os Registros' }]}
@@ -220,6 +284,37 @@ export default function Blacklist() {
                                 boxShadow: 2,
                                 border: 2,
                                 borderColor: 'primary.light',
+                                '& .MuiDataGrid-cell': {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    overflow: 'visible',
+                                    textOverflow: 'clip',
+                                    padding: '8px',
+                                },
+                                '& .MuiDataGrid-cell:hover': {
+                                    color: 'primary.main',
+                                },
+                                '& .MuiDataGrid-row': {
+                                    borderBottom: '1px solid #e0e0e0',
+                                    minHeight: '25px !important', // Force minimum height
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                    },
+                                },
+                                '& .MuiDataGrid-columnHeaders': {
+                                    backgroundColor: '#f5f5f5',
+                                    borderBottom: '2px solid #e0e0e0',
+                                },
+                                '& .MuiDataGrid-footerContainer': {
+                                    borderTop: '2px solid #e0e0e0',
+                                    backgroundColor: '#f5f5f5',
+                                },
+                                '& .MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel': {
+                                    margin: 0,
+                                },
+                                '& .MuiTablePagination-root': {
+                                    overflow: 'hidden',
+                                }
                             }}
                         />
                     </Box>

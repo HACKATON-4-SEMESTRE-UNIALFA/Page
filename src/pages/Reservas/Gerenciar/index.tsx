@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { verificaTokenExpirado } from "../../../services/token";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import 'dayjs/locale/pt-br';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from "axios";
-
 import {
     Box,
     Button,
@@ -28,11 +27,9 @@ import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import { LayoutDashboard } from "../../../components/LayoutDashboard";
 import { SnackbarMui } from "../../../components/Snackbar";
-import DropZone from "../../../components/Dropzone";
 import { Loading } from "../../../components/Loading";
 import { IToken } from "../../../interfaces/token";
 import { ptBR } from '@mui/x-date-pickers/locales';
-import { get, is } from "immutable";
 
 interface IReserva {
     id: number
@@ -63,7 +60,6 @@ const FormTextField = styled(TextField)({
     marginBottom: '1rem',
 });
 
-
 export default function GerenciarReservas() {
     const {
         control,
@@ -89,9 +85,16 @@ export default function GerenciarReservas() {
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [disableDates, setDisableDates] = useState<string[]>([]);
+    const [blacklistDates, setBlacklistDates] = useState<string[]>([]);
+    const [whitelistDates, setWhitelistDates] = useState<string[]>([]);
     const [horarioSalvo, setHorarioSalvo] = useState<string>('');
+    const [loading, setLoading] = useState(false);
 
+    const navigate = useNavigate();
+    const { id } = useParams();
+    const [isEdit, setIsEdit] = useState<boolean>(false);
 
+    const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken;
 
     const handleShowSnackbar = (msg: string, sev: 'success' | 'error' | 'info' | 'warning') => {
         setMessage(msg);
@@ -99,13 +102,56 @@ export default function GerenciarReservas() {
         setSnackbarVisible(true);
     };
 
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { id } = useParams();
-    const [isEdit, setIsEdit] = useState<boolean>(false);
+    const fetchBlackList = useCallback(async () => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_URL}/blacklist/`,
+                { headers: { Authorization: `Bearer ${token.accessToken}` } }
+            );
+            setBlacklistDates(response.data.blackList || []);
+        } catch (err: any) {
+            setError(err.message);
+        }
+    }, [token.accessToken]);
 
-    const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken
+    const fetchWhiteList = useCallback(async () => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_URL}/whitelist/`,
+                { headers: { Authorization: `Bearer ${token.accessToken}` } }
+            );
+            setWhitelistDates(response.data.whiteList || []);
+        } catch (err: any) {
+            setError(err.message);
+        }
+    }, [token.accessToken]);
 
+    const getDisabledDates = useCallback(() => {
+        const today = dayjs();
+        const disabledDatesSet = new Set<string>();
+
+        // Adiciona os finais de semana (sábados e domingos)
+        for (let i = 0; i < 31; i++) {
+            const date = today.add(i, 'day');
+            if (date.day() === 0 || date.day() === 6) {
+                disabledDatesSet.add(date.format('YYYY-MM-DD'));
+            }
+        }
+
+        // Adiciona blacklist
+        blacklistDates.forEach(date => {
+            const dateObj = dayjs(date);
+            disabledDatesSet.add(dateObj.format('YYYY-MM-DD'))
+        });
+
+        // Remove whitelist dates
+        whitelistDates.forEach(date => {
+            const dateObj = dayjs(date);
+            disabledDatesSet.delete(dateObj.format('YYYY-MM-DD'))
+        });
+
+        setDisableDates(Array.from(disabledDatesSet));
+    }, [blacklistDates, whitelistDates]);
 
     useEffect(() => {
         if (localStorage.length === 0 || verificaTokenExpirado()) {
@@ -118,7 +164,11 @@ export default function GerenciarReservas() {
             .then((res) => {
                 setAmbientes(res.data.ambientes);
             })
-            .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"))
+            .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"));
+
+        fetchBlackList();
+        fetchWhiteList();
+        getDisabledDates();
 
         const reservaId = Number(id);
         if (!isNaN(reservaId)) {
@@ -142,91 +192,28 @@ export default function GerenciarReservas() {
                     setLoading(false)
                 })
         }
-    }, [id, navigate, setValue]);
+    }, [id, navigate, setValue, fetchBlackList, fetchWhiteList, getDisabledDates]);
 
-    const getDisabledDates = useCallback((diasBloqueados: string[]) => {
-        const today = dayjs();
-        const disabledDates: string[] = [];
-
-        // Adiciona os finais de semana (sábados e domingos)
-        for (let i = 0; i < 31; i++) {
-            const date = today.add(i, 'day');
-            if (date.day() === 0 || date.day() === 6) {
-                disabledDates.push(date.format('YYYY-MM-DD'));
-            }
-        }
-
-        // Combina as datas dos finais de semana com as datas bloqueadas da API
-        const allDisabledDates = [...new Set([...disabledDates, ...diasBloqueados])]; // Remove duplicatas
-        setDisableDates(allDisabledDates);
-    }, [disableDates ,setDisableDates]);
-
-    const handleAmbienteChange = useCallback((id: any) => {
+    const handleAmbienteChange = useCallback((id: string) => {
         setLoading(true);
         if (!id) {
             return setLoading(false);
         }
-
-        // Realiza a requisição para buscar os dias bloqueados do ambiente
-        axios.get(import.meta.env.VITE_URL + `/verificaReservaDia/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+        axios.get(import.meta.env.VITE_URL + `/verificaReservaDia/${id}`, {
+            headers: { Authorization: `Bearer ${token.accessToken}` }
+        })
             .then((res) => {
-                // Supondo que 'res.data.horario' seja um array de datas bloqueadas
-                const diasBloqueados = res.data.diasOcupados || [];
-
-                // Combine as datas bloqueadas do ambiente com as datas dos finais de semana
-                getDisabledDates(diasBloqueados); // Passa as datas bloqueadas para a função de gerar finais de semana
-                setLoading(false);
+                const diasOcupados = res.data.diasOcupados || [];
+                setDisableDates(prevDates => [...prevDates, ...diasOcupados]);
             })
             .catch((err) => {
                 console.log(err);
-                setLoading(false);
-            });
-    }, [setDisableDates, getDisabledDates]);
-
-    function submitForm(data: IReserva): void {
-        setLoading(true);
-        console.log(data)
-        // Configurar a URL e o método da requisição
-        const url = isEdit
-            ? `${import.meta.env.VITE_URL}/reservas/${data.id}`
-            : `${import.meta.env.VITE_URL}/reservas`;
-        const method = isEdit ? 'PUT' : 'POST';
-
-        // Montar os dados para a requisição
-        const requestData = isEdit
-            ? {
-                id_ambiente: data.id_ambiente,
-                horario: data.horario,
-                data: dayjs(data.data).format('YYYY-MM-DD'),
-                id_alteracao: token.usuario.id, // ID do usuário atual
-            }
-            : {
-                id_usuario: token.usuario.id, // ID do usuário atual criando a reserva
-                id_ambiente: data.id_ambiente,
-                horario: data.horario,
-                data: dayjs(data.data).format('YYYY-MM-DD'),
-            };
-
-        // Fazer a requisição
-        axios({
-            method,
-            url,
-            headers: { Authorization: `Bearer ${token.accessToken}` },
-            data: requestData,
-        })
-            .then((response) => {
-                handleShowSnackbar(isEdit ? 'Reserva atualizada com sucesso!' : 'Reserva criada com sucesso!', 'success');
-                navigate('/reservas'); // Redireciona para a lista de reservas
-            })
-            .catch((error) => {
-                console.error('Erro ao processar a requisição:', error);
-                const errorMsg = error.response?.data?.message || 'Ocorreu um erro ao salvar os dados.';
-                handleShowSnackbar(errorMsg, 'error');
             })
             .finally(() => {
                 setLoading(false);
             });
-    }
+    }, [setDisableDates, token.accessToken]);
+
 
     const fetchAvailableTimes = useCallback(async (date: string) => {
         setLoading(true);
@@ -254,7 +241,6 @@ export default function GerenciarReservas() {
         }
     }, [getValues, token.accessToken]);
 
-    // Fun o para lidar com a sele o de uma data
     const handleDateChange = useCallback(
         (newDate: any) => {
             setSelectedDate(newDate);
@@ -265,6 +251,48 @@ export default function GerenciarReservas() {
         },
         [fetchAvailableTimes, setSelectedDate, setSelectedTime]
     );
+
+    function submitForm(data: IReserva): void {
+        setLoading(true);
+        // [Código de submissão do formulário igual ao original]
+        const url = isEdit
+            ? `${import.meta.env.VITE_URL}/reservas/${data.id}`
+            : `${import.meta.env.VITE_URL}/reservas`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const requestData = isEdit
+            ? {
+                id_ambiente: data.id_ambiente,
+                horario: data.horario,
+                data: dayjs(data.data).format('YYYY-MM-DD'),
+                id_alteracao: token.usuario.id,
+            }
+            : {
+                id_usuario: token.usuario.id,
+                id_ambiente: data.id_ambiente,
+                horario: data.horario,
+                data: dayjs(data.data).format('YYYY-MM-DD'),
+            };
+
+        axios({
+            method,
+            url,
+            headers: { Authorization: `Bearer ${token.accessToken}` },
+            data: requestData,
+        })
+            .then((response) => {
+                handleShowSnackbar(isEdit ? 'Reserva atualizada com sucesso!' : 'Reserva criada com sucesso!', 'success');
+                navigate('/reservas');
+            })
+            .catch((error) => {
+                console.error('Erro ao processar a requisição:', error);
+                const errorMsg = error.response?.data?.message || 'Ocorreu um erro ao salvar os dados.';
+                handleShowSnackbar(errorMsg, 'error');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }
 
     return (
         <>
@@ -287,7 +315,6 @@ export default function GerenciarReservas() {
                         </Typography>
 
                         <Box component="form" onSubmit={handleSubmit(submitForm)} noValidate>
-
                             <Controller
                                 name="id_ambiente"
                                 control={control}
@@ -303,8 +330,8 @@ export default function GerenciarReservas() {
                                             {...field}
                                             label="Ambientes Disponíveis"
                                             onChange={(e) => {
-                                                field.onChange(e); // Atualiza o valor no formulário
-                                                handleAmbienteChange(e.target.value); // Chama a função para atualizar a lógica de ambientes
+                                                field.onChange(e);
+                                                handleAmbienteChange(e.target.value);
                                             }}
                                         >
                                             <MenuItem value="">Selecione o Ambiente</MenuItem>
@@ -319,12 +346,7 @@ export default function GerenciarReservas() {
                                 )}
                             />
 
-                            <Divider >
-                                <Typography variant="h6" gutterBottom sx={{ textAlign: 'center' }}>
-                                    Escolha uma data
-                                </Typography>
-                            </Divider>
-
+                            {/* Restante do componente igual ao original */}
                             <LocalizationProvider
                                 dateAdapter={AdapterDayjs}
                                 adapterLocale="pt-br"
@@ -337,7 +359,7 @@ export default function GerenciarReservas() {
                                         <StaticDatePicker
                                             {...field}
                                             orientation="landscape"
-                                            displayStaticWrapperAs="desktop" // Mantém o DatePicker estático
+                                            displayStaticWrapperAs="desktop"
                                             value={selectedDate}
                                             disablePast
                                             minDate={dayjs().add(1, 'day')}
@@ -431,7 +453,7 @@ export default function GerenciarReservas() {
                                                                             backgroundColor: field.value === time ? 'primary.dark' : 'rgba(0, 0, 0, 0.04)'
                                                                         }
                                                                     }}
-                                                                    onClick={() => {field.onChange(time)}}
+                                                                    onClick={() => { field.onChange(time) }}
                                                                     fullWidth
                                                                 >
                                                                     {time}

@@ -73,8 +73,9 @@ export default function GerenciarAmbientes() {
     const handleStatusChange = (event: SelectChangeEvent<string>) => {
         const status = event.target.value as string;
         if (isEdit && status !== 'Disponível') {
-            handleShowSnackbar('Essa alteração na situação afetará reservas ativas neste ambiente !', 'warning');
+            handleShowSnackbar('Atenção essa alteração na situação afetará reservas ativas neste ambiente !', 'warning');
         } 
+        setValue('status', status);
     };
 
 
