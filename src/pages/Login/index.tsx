@@ -53,7 +53,7 @@ export default function Login() {
             );
             handleShowSnackbar('Login efetuado com sucesso!', 'success');
             setTimeout(() => {
-                navigate('/ambientes');
+                navigate('/dashboard');
             }, 1500);
         } catch (error) {
             setLoading(false);
