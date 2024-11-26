@@ -38,7 +38,6 @@ export default function Login() {
     };
 
     const onSubmit = useCallback(async (data: ILogin) => {
-        console.log("Dados enviados:", data);
         setLoading(true);
         try {
             const response = await axios.post(`${import.meta.env.VITE_URL}/login`, {
@@ -58,7 +57,6 @@ export default function Login() {
             }, 1500);
         } catch (error) {
             setLoading(false);
-            console.error("Erro ao efetuar login:", error);
             handleShowSnackbar('Login ou senha inválidos!', 'error');
         }
     }, [navigate]);
@@ -161,7 +159,6 @@ export default function Login() {
                             Entrar
                         </Button>
 
-                        {/* Link para registro */}
                         <Typography
                             variant="body2"
                             sx={{
