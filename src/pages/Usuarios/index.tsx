@@ -60,7 +60,7 @@ export default function Usuarios() {
 
         setLoading(true);
 
-        axios.get(import.meta.env.VITE_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
+        axios.get(import.meta.env.VITE_URL + '/usuarios/ativos', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
                 console.log(res.data);
                 setdadosUsers(res.data.usuario);
@@ -198,10 +198,11 @@ export default function Usuarios() {
     const handleConfirmedDelete = useCallback(() => {
         const id = dialogState.id;
 
-        axios.delete(import.meta.env.VITE_URL + `/usuarios/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+        axios.put(import.meta.env.VITE_URL + `/usuarios/desabilita/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then(() => {
-                handleShowSnackbar("Usuário removido com sucesso", "success");
+                handleShowSnackbar("Usuário desativado com sucesso", "success");
                 setdadosUsers((prevRows) => prevRows.filter((row) => row.id !== id));
+                navigate('/usuarios')
                 setLoading(false);
             })
             .catch((error) => {
