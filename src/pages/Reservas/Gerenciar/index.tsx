@@ -128,11 +128,12 @@ export default function GerenciarReservas() {
                 disabledDatesSet.delete(formattedDate);
             }
         });
-    }, [blacklistDates, whitelistDates]);
+
+        setDisableDates(Array.from(disabledDatesSet));
+    }, []);
 
     const fetchBlackAndWhiteLists = useCallback(async () => {
         try {
-            // Realiza as duas requisições em paralelo para otimizar
             const [blacklistResponse, whitelistResponse] = await Promise.all([
                 axios.get(`${import.meta.env.VITE_URL}/blacklist/`, {
                     headers: { Authorization: `Bearer ${token.accessToken}` }
@@ -142,15 +143,26 @@ export default function GerenciarReservas() {
                 })
             ]);
 
-            setBlacklistDates(blacklistResponse.data.blackList || []);
-            setWhitelistDates(whitelistResponse.data.whiteList || []);
+            setBlacklistDates(
+                blacklistResponse.data.blackList.data
+                    ? blacklistResponse.data.blackList.map(
+                        (item: { data: string }) => item.data
+                    )
+                    : []
+            );
+            setWhitelistDates(
+                whitelistResponse.data.whiteList.data
+                    ? whitelistResponse.data.whiteList.map(
+                        (item: { data: string }) => item.data
+                    )
+                    : []
+            );
 
-            // Chama getDisabledDates após atualizar os estados
             getDisabledDates();
         } catch (err: any) {
             setError(err.message);
         }
-    }, [token.accessToken, getDisabledDates]);
+    }, [getDisabledDates, blacklistDates, whitelistDates]);
 
 
 
@@ -160,8 +172,6 @@ export default function GerenciarReservas() {
             return;
         }
 
-        // Busca listas apenas uma vez ao montar o componente
-        fetchBlackAndWhiteLists();
 
         // Busca ambientes
         axios.get(import.meta.env.VITE_URL + '/ambiente/disponivel', { headers: { Authorization: `Bearer ${token.accessToken}` } })
@@ -221,7 +231,6 @@ export default function GerenciarReservas() {
             });
     }, [
         setDisableDates,
-        token.accessToken,
         disableDates,
         getDisabledDates
     ]);
@@ -251,7 +260,7 @@ export default function GerenciarReservas() {
         } finally {
             setLoading(false);
         }
-    }, [getValues, token.accessToken]);
+    }, [getValues]);
 
     const handleDateChange = useCallback(
         (newDate: any) => {
