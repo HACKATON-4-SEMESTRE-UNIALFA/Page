@@ -102,35 +102,12 @@ export default function GerenciarReservas() {
         setSnackbarVisible(true);
     };
 
-    const fetchBlackList = useCallback(async () => {
-        try {
-            const response = await axios.get(
-                `${import.meta.env.VITE_URL}/blacklist/`,
-                { headers: { Authorization: `Bearer ${token.accessToken}` } }
-            );
-            setBlacklistDates(response.data.blackList || []);
-        } catch (err: any) {
-            setError(err.message);
-        }
-    }, [token.accessToken]);
-
-    const fetchWhiteList = useCallback(async () => {
-        try {
-            const response = await axios.get(
-                `${import.meta.env.VITE_URL}/whitelist/`,
-                { headers: { Authorization: `Bearer ${token.accessToken}` } }
-            );
-            setWhitelistDates(response.data.whiteList || []);
-        } catch (err: any) {
-            setError(err.message);
-        }
-    }, [token.accessToken]);
 
     const getDisabledDates = useCallback(() => {
         const today = dayjs();
         const disabledDatesSet = new Set<string>();
 
-        // Adiciona os finais de semana (sábados e domingos)
+        // Adiciona os finais de semana
         for (let i = 0; i < 31; i++) {
             const date = today.add(i, 'day');
             if (date.day() === 0 || date.day() === 6) {
@@ -140,18 +117,42 @@ export default function GerenciarReservas() {
 
         // Adiciona blacklist
         blacklistDates.forEach(date => {
-            const dateObj = dayjs(date);
-            disabledDatesSet.add(dateObj.format('YYYY-MM-DD'))
+            const formattedDate = dayjs(date).format('YYYY-MM-DD');
+            disabledDatesSet.add(formattedDate);
         });
 
-        // Remove whitelist dates
+        // Remove whitelist (prioridade da whitelist)
         whitelistDates.forEach(date => {
-            const dateObj = dayjs(date);
-            disabledDatesSet.delete(dateObj.format('YYYY-MM-DD'))
+            const formattedDate = dayjs(date).format('YYYY-MM-DD');
+            if (disabledDatesSet.has(formattedDate)) {
+                disabledDatesSet.delete(formattedDate);
+            }
         });
-
-        setDisableDates(Array.from(disabledDatesSet));
     }, [blacklistDates, whitelistDates]);
+
+    const fetchBlackAndWhiteLists = useCallback(async () => {
+        try {
+            // Realiza as duas requisições em paralelo para otimizar
+            const [blacklistResponse, whitelistResponse] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_URL}/blacklist/`, {
+                    headers: { Authorization: `Bearer ${token.accessToken}` }
+                }),
+                axios.get(`${import.meta.env.VITE_URL}/whitelist/`, {
+                    headers: { Authorization: `Bearer ${token.accessToken}` }
+                })
+            ]);
+
+            setBlacklistDates(blacklistResponse.data.blackList || []);
+            setWhitelistDates(whitelistResponse.data.whiteList || []);
+
+            // Chama getDisabledDates após atualizar os estados
+            getDisabledDates();
+        } catch (err: any) {
+            setError(err.message);
+        }
+    }, [token.accessToken, getDisabledDates]);
+
+
 
     useEffect(() => {
         if (localStorage.length === 0 || verificaTokenExpirado()) {
@@ -159,16 +160,15 @@ export default function GerenciarReservas() {
             return;
         }
 
+        // Busca listas apenas uma vez ao montar o componente
+        fetchBlackAndWhiteLists();
+
         // Busca ambientes
         axios.get(import.meta.env.VITE_URL + '/ambiente/disponivel', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
                 setAmbientes(res.data.ambientes);
             })
             .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"));
-
-        fetchBlackList();
-        fetchWhiteList();
-        getDisabledDates();
 
         const reservaId = Number(id);
         if (!isNaN(reservaId)) {
@@ -192,27 +192,39 @@ export default function GerenciarReservas() {
                     setLoading(false)
                 })
         }
-    }, [id, navigate, setValue, fetchBlackList, fetchWhiteList, getDisabledDates]);
+    }, [id, navigate, setValue, getDisabledDates]);
 
     const handleAmbienteChange = useCallback((id: string) => {
+        // Se não houver ID, não faz nada
+        if (!id) return;
+
+        // Carrega datas ocupadas específicas do ambiente
         setLoading(true);
-        if (!id) {
-            return setLoading(false);
-        }
         axios.get(import.meta.env.VITE_URL + `/verificaReservaDia/${id}`, {
             headers: { Authorization: `Bearer ${token.accessToken}` }
         })
             .then((res) => {
                 const diasOcupados = res.data.diasOcupados || [];
-                setDisableDates(prevDates => [...prevDates, ...diasOcupados]);
+
+                // Combina as datas ocupadas com as datas desabilitadas existentes
+                const combinedDisabledDates = [...new Set([...disableDates, ...diasOcupados])];
+                setDisableDates(combinedDisabledDates);
+
+                // Recalcula datas desabilitadas considerando whitelist
+                getDisabledDates();
             })
             .catch((err) => {
-                console.log(err);
+                console.error('Erro ao verificar dias ocupados:', err);
             })
             .finally(() => {
                 setLoading(false);
             });
-    }, [setDisableDates, token.accessToken]);
+    }, [
+        setDisableDates,
+        token.accessToken,
+        disableDates,
+        getDisabledDates
+    ]);
 
 
     const fetchAvailableTimes = useCallback(async (date: string) => {

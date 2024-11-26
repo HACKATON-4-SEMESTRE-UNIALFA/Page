@@ -61,11 +61,11 @@ export default function Dashboard() {
         setLoading(true);
 
         axios
-            .get(import.meta.env.VITE_URL + "/usuarios", {
+            .get(import.meta.env.VITE_URL + "/reservas", {
                 headers: { Authorization: `Bearer ${token.accessToken}` },
             })
             .then((res) => {
-                setDadosUsuarios(res.data);
+                setDadosUsuarios(res.data.usuario);
                 setLoading(false);
             })
             .catch((error) => {
@@ -78,7 +78,7 @@ export default function Dashboard() {
                 headers: { Authorization: `Bearer ${token.accessToken}` },
             })
             .then((res) => {
-                setDadosAmbientes(res.data);
+                setDadosAmbientes(res.data.ambiente);
                 setLoading(false);
             })
             .catch((error) => {
@@ -93,17 +93,15 @@ export default function Dashboard() {
             <LayoutDashboard>
                 <MuiGrid container spacing={3} sx={{ mt: 3 }}>
                     {/* Totais */}
-                    <MuiGrid size={{xs: 12, sm: 6}} alignItems={"center"} display={"flex"} flexDirection={"column"}>
+                    <MuiGrid size={{xs: 12, sm: 6}} alignItems={"center"} display={"flex"} flexDirection={"column"} gap={5} justifyContent={"center"}>
                         <Card>
                             <CardContent>
-                                <Typography variant="h5">Total de Ambientes</Typography>
-                                <Typography variant="h6">{dadosAmbientes.length}</Typography>
+                                <Typography variant="h5">Total de Ambientes: {dadosAmbientes.length}</Typography>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardContent>
-                                <Typography variant="h5">Total de Rerservas</Typography>
-                                <Typography variant="h6">{dadosAmbientes.length}</Typography>
+                                <Typography variant="h5">Quantidade de Reservas: {dadosAmbientes.length}</Typography>
                             </CardContent>
                         </Card>
                     </MuiGrid>
