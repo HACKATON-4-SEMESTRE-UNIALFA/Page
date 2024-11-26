@@ -36,7 +36,8 @@ export default function Register() {
     const [message, setMessage] = useState('');
     const [severity, setSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('info');
     const [loading, setLoading] = useState(false);
-
+    const nomeRegex = /^[a-zA-Z\s]{7,}$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).{7,}$/;
     const handleShowSnackbar = (msg: string, sev: 'success' | 'error' | 'info' | 'warning') => {
         setMessage(msg);
         setSeverity(sev);
@@ -45,38 +46,47 @@ export default function Register() {
 
     const onSubmit = useCallback(async (data: IRegister) => {
         setLoading(true);
-        try {
-            const cleanCpf = data.cpf.replace(/\D/g, ''); // Remove tudo que não é número
-            const cleanTelefone = data.telefone.replace(/\D/g, ''); // Remove tudo que não é número
 
+        try {
             const cleanData = {
                 ...data,
-                cpf: cleanCpf,
-                telefone: cleanTelefone,
-                isAdmin: false
+                cpf: data.cpf.replace(/\D/g, ''),
+                telefone: data.telefone.replace(/\D/g, ''),
+                isAdmin: false,
+                isUser: true
             };
 
-            console.log('Dados enviados:', cleanData);
+            const response = await axios.post(`${import.meta.env.VITE_URL}/usuarios`, cleanData);
 
-            await axios.post(`${import.meta.env.VITE_URL}/usuarios`, cleanData);
-
-            handleShowSnackbar('Registro efetuado com sucesso!', 'success');
-            setTimeout(() => {
-                navigate('/');
-            }, 1500);
+            if (response.status === 201) {
+                handleShowSnackbar('Registro efetuado com sucesso!', 'success');
+                setTimeout(() => navigate('/'), 1500);
+                setLoading(false);
+            }
         } catch (error) {
             setLoading(false);
-            console.error('Erro ao registrar:', error);
-            handleShowSnackbar('Erro ao registrar usuário!', 'error');
-        }
-    }, [navigate]);
 
-    // Função para bloquear a digitação de letras e caracteres especiais
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (!/[0-9]/.test(e.key)) {
-            e.preventDefault();
+            if (axios.isAxiosError(error) && error.response?.data?.errors) {
+                const { errors } = error.response.data;
+                const cpfError = errors.cpf?.[0];
+                const emailError = errors.email?.[0];
+
+                if (cpfError) handleShowSnackbar(cpfError, 'error');
+                if (emailError) handleShowSnackbar(emailError, 'error');
+            } else {
+                handleShowSnackbar('Erro desconhecido ao registrar usuário!', 'error');
+            }
         }
-    };
+    }, [navigate, handleShowSnackbar]);
+
+    const handleKeyPress = useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        },
+        []
+    );
 
     return (
         <>
@@ -126,8 +136,14 @@ export default function Register() {
                         </Typography>
 
                         <TextField
-                            {...register('nome', { required: 'Por favor, digite seu nome' })}
-                            label="Nome"
+                            {...register('nome', {
+                                required: 'Por favor, digite seu nome',
+                                pattern: {
+                                    value: nomeRegex,
+                                    message: 'Por favor, digite um nome válido e com mínimo 7 caracteres',
+                                },
+                            })}
+                            label="Nome Completo"
                             size="small"
                             fullWidth
                             sx={{ mb: 2 }}
@@ -153,7 +169,13 @@ export default function Register() {
                         />
 
                         <TextField
-                            {...register('password', { required: 'Por favor, digite sua senha' })}
+                            {...register('password', {
+                                required: 'Por favor, digite sua senha',
+                                pattern: {
+                                    value: passwordRegex,
+                                    message: 'A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número, um caractere especial e ter no mínimo 7 caracteres.',
+                                },
+                            })}
                             label="Senha"
                             type="password"
                             size="small"
@@ -180,7 +202,6 @@ export default function Register() {
                             autoComplete="off"
                         />
 
-                        {/* CPF */}
                         <TextField
                             {...register('cpf', {
                                 required: 'Por favor, digite seu CPF',
@@ -196,10 +217,9 @@ export default function Register() {
                             inputProps={{
                                 maxLength: 11,
                             }}
-                            onKeyPress={handleKeyPress} // Bloquear letras e caracteres
+                            onKeyPress={handleKeyPress}
                         />
 
-                        {/* Telefone */}
                         <TextField
                             {...register('telefone', {
                                 required: 'Por favor, digite seu telefone',
@@ -215,7 +235,7 @@ export default function Register() {
                             inputProps={{
                                 maxLength: 11,
                             }}
-                            onKeyPress={handleKeyPress} // Bloquear letras e caracteres
+                            onKeyPress={handleKeyPress}
                         />
 
                         <Grid container spacing={2}>

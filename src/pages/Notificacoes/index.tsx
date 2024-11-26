@@ -94,7 +94,7 @@ export default function Notificacoes() {
         } else {
             axios.get(import.meta.env.VITE_URL + '/notificacoes/usuario/' + token.usuario.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    setNotificacoes(res.data)
+                    setNotificacoes(res.data.notificacao)
                     setLoading(false)
                 })
                 .catch((err) => {
@@ -279,7 +279,7 @@ export default function Notificacoes() {
     return (
         <>
             <Loading visible={loading} />
-            <LayoutDashboard>
+            <LayoutDashboard refresh={refreshKey}>
                 <SnackbarMui
                     open={snackbarVisible}
                     message={message}

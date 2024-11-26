@@ -1,12 +1,10 @@
-# Painel Casa da Paz
-
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Vite](https://img.shields.io/badge/Vite-5.3-646CFF)
 ![React](https://img.shields.io/badge/React-18.3-61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue)
 
 ## 📋 Descrição  
-Sistema de painel administrativo desenvolvido com React, TypeScript e Vite.
+Painel administrativo para gerenciamento de reservas de ambientes para reuniões. Desenvolvido com React, TypeScript e Vite.
 
 ## 🚀 Tecnologias Principais  
 - React 18.3  
@@ -29,6 +27,9 @@ Sistema de painel administrativo desenvolvido com React, TypeScript e Vite.
 - **Autenticação e API**:  
   - JWT  
   - Axios  
+
+- **Banco de Dados**:  
+  - JSON Server (para emulacao de banco de dados)
 
 ## 🛠️ Scripts Disponíveis  
 
@@ -59,24 +60,6 @@ Para iniciar o servidor na porta 3001:
 3. Inicie o servidor de desenvolvimento:  
 `npm run dev`  
 4. Em outro terminal, inicie a API:  
-Consulte o repositório Page, para mais informações 
+`npm run server`
 
-## 📚 Estrutura do Projeto  
-O projeto utiliza:  
-- Vite como bundler  
-- TypeScript para tipagem estática  
-- ESLint para linting  
-- Diversas bibliotecas de UI para uma interface rica e responsiva  
 
-## 🔒 Autenticação  
-O sistema utiliza:  
-- JWT para tokens  
-- Axios para requisições HTTP  
-
-## 📝 Observações  
-- O projeto é privado (`"private": true`)  
-- Versão atual: 0.0.0  
-- Configurado com suporte a TypeScript e ESLint  
-
-## 🤝 Contribuição  
-Por ser um projeto privado, consulte as diretrizes de contribuição com a equipe de desenvolvimento.

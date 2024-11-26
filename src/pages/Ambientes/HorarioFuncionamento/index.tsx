@@ -367,7 +367,7 @@ export default function GerenciarHorarios() {
                                     color="error"
                                     size="large"
                                     sx={{ mt: 2, width: '45%', mr: 1 }}
-                                    onClick={() => navigate(-1)}
+                                    onClick={() => navigate(-2)}
                                 >
                                     Voltar
                                 </Button>

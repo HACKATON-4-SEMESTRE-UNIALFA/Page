@@ -16,6 +16,7 @@ import {
     TextField,
     Typography,
     Paper,
+    SelectChangeEvent,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { LayoutDashboard } from "../../../components/LayoutDashboard";
@@ -23,8 +24,6 @@ import { SnackbarMui } from "../../../components/Snackbar";
 import DropZone from "../../../components/Dropzone";
 import { Loading } from "../../../components/Loading";
 import { IToken } from "../../../interfaces/token";
-import { get, Stack } from "immutable";
-import { ConstructionOutlined } from "@mui/icons-material";
 
 interface IAmbientes {
     id: 0,
@@ -71,6 +70,13 @@ export default function GerenciarAmbientes() {
     const [severity, setSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('info');
     const [previewUrl, setPreviewUrl] = useState<string>('');
 
+    const handleStatusChange = (event: SelectChangeEvent<string>) => {
+        const status = event.target.value as string;
+        if (isEdit && status !== 'Disponível') {
+            handleShowSnackbar('Atenção essa alteração na situação afetará reservas ativas neste ambiente !', 'warning');
+        } 
+        setValue('status', status);
+    };
 
 
     const handleShowSnackbar = (msg: string, sev: 'success' | 'error' | 'info' | 'warning') => {
@@ -146,14 +152,6 @@ export default function GerenciarAmbientes() {
             formData.append('imagem', data.imagem);
         }
 
-        if (data.imagem) {
-            console.log('Nome da imagem:', data.imagem.name);
-            console.log('Tipo da imagem:', data.imagem.type);
-            console.log('Tamanho da imagem:', data.imagem.size);
-        }
-
-        console.log(formData)
-
         const config = {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -161,14 +159,10 @@ export default function GerenciarAmbientes() {
             }
         };
 
-        for (const pair of formData.entries()) {
-            console.log(pair[0] + ': ' + pair[1]);
-        }
 
         const url = isEdit
-            ? `${import.meta.env.VITE_URL}/ambientes/${id}`
+            ? `${import.meta.env.VITE_URL}/ambientes/${id}/usuario/${token.usuario.id}`
             : `${import.meta.env.VITE_URL}/ambientes/`;
-
 
 
         const request = isEdit
@@ -267,8 +261,12 @@ export default function GerenciarAmbientes() {
                                 rules={{ required: 'Status é obrigatória!' }}
                                 render={({ field }) => (
                                     <FormControl fullWidth error={!!errors.status} sx={{ mb: 2 }}>
-                                        <InputLabel>Categoria</InputLabel>
-                                        <Select {...field} label="Categoria">
+                                        <InputLabel>Situação</InputLabel>
+                                        <Select
+                                            {...field}
+                                            label="Categoria"
+                                            onChange={handleStatusChange}
+                                        >
                                             <MenuItem value="">Selecione a categoria</MenuItem>
                                             <MenuItem value="Disponível">Disponível</MenuItem>
                                             <MenuItem value="Manutenção">Manutenção</MenuItem>
@@ -338,7 +336,7 @@ export default function GerenciarAmbientes() {
                                     fullWidth
                                     size="large"
                                     sx={{ mt: 2 }}
-                                    onClick={() => navigate("/horarios/" + id)}
+                                    onClick={() => navigate("/horarios/" + id,)}
                                 >
                                     Editar Horários de Funcionamento
                                 </Button>

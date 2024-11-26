@@ -9,7 +9,6 @@ import {
     Button,
     Box,
     IconButton,
-    Avatar,
     Tooltip,
     Chip
 } from '@mui/material'
@@ -26,7 +25,6 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import HistoryIcon from '@mui/icons-material/History';
 import { LayoutDashboard } from "../../components/LayoutDashboard"
-import { ConfirmationDialog } from "../../components/Dialog"
 import { SnackbarMui } from "../../components/Snackbar"
 import { IToken } from "../../interfaces/token"
 import { GridInitialStateCommunity } from "@mui/x-data-grid/models/gridStateCommunity"
@@ -121,7 +119,7 @@ export default function Reservas() {
                     setLoading(false)
                 })
         } else {
-            axios.get(import.meta.env.VITE_URL + '/reservas?id_usuario=' + token.usuario.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
+            axios.get(import.meta.env.VITE_URL + '/reservas/usuario/' + token.usuario.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
                     setDadosReservas(res.data)
                     setLoading(false)
@@ -332,7 +330,7 @@ export default function Reservas() {
                 open={openModal}
                 handleClose={handleClose}
             />
-            <LayoutDashboard>
+            <LayoutDashboard refresh={refreshKey}>
                 <SnackbarMui
                     open={snackbarVisible}
                     message={message}

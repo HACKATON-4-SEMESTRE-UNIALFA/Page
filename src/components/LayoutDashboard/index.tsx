@@ -35,11 +35,12 @@ import axios from 'axios';
 interface IProps {
   children: React.ReactNode;
   isAdmin?: boolean; // Adicionada flag para verificar se o usuário é admin
+  refresh?: number 
 }
 
 const drawerWidth = 240;
 
-export const LayoutDashboard = ({ children }: IProps) => {
+export const LayoutDashboard = ({ children, refresh }: IProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -65,7 +66,7 @@ export const LayoutDashboard = ({ children }: IProps) => {
 
   useEffect(() => {
     fetchNotificationCount();
-  }, [fetchNotificationCount]);
+  }, [fetchNotificationCount, refresh]);
 
   // Itens do menu padrão
   const menuItems = [
