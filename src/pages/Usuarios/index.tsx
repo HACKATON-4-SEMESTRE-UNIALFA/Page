@@ -62,7 +62,7 @@ export default function Usuarios() {
 
         axios.get(import.meta.env.VITE_URL + '/usuarios/ativos', { headers: { Authorization: `Bearer ${token.accessToken}` } })
             .then((res) => {
-                console.log(res.data);
+                (res.data);
                 setdadosUsers(res.data.usuario);
                 setLoading(false);
             })
@@ -153,7 +153,10 @@ export default function Usuarios() {
             align: 'center',
             renderCell: (params: GridRenderCellParams) => (
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                    <Chip label={params.value ? 'Sim' : 'Não'} />
+                    <Chip 
+                        label={params.value ? 'Sim' : 'Não'} 
+                        color={params.value ? 'success' : 'error'} 
+                    />
                 </Box>
             ),
         },
@@ -199,7 +202,9 @@ export default function Usuarios() {
         const id = dialogState.id;
 
         axios.put(import.meta.env.VITE_URL + `/usuarios/desabilita/${id}`, { headers: { Authorization: `Bearer ${token.accessToken}` } })
-            .then(() => {
+            .then((res) => {
+                setDialogState({ open: false, id: 0 });
+                (res)
                 handleShowSnackbar("Usuário desativado com sucesso", "success");
                 setdadosUsers((prevRows) => prevRows.filter((row) => row.id !== id));
                 navigate('/usuarios')
@@ -207,6 +212,7 @@ export default function Usuarios() {
             })
             .catch((error) => {
                 const errorMessage = error.response?.data || "Erro ao remover usuário";
+                (error)
                 setLoading(false);
                 handleShowSnackbar(errorMessage, "error");
             });

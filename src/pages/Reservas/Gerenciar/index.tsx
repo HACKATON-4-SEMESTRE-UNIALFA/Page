@@ -224,7 +224,7 @@ export default function GerenciarReservas() {
                 getDisabledDates();
             })
             .catch((err) => {
-                console.error('Erro ao verificar dias ocupados:', err);
+                handleShowSnackbar('Erro ao verificar dias ocupados:', err);
             })
             .finally(() => {
                 setLoading(false);
@@ -255,7 +255,7 @@ export default function GerenciarReservas() {
             setAvailableTimes(horariosArray);
 
         } catch (err) {
-            console.error('Erro ao buscar horários disponíveis:', err);
+            handleShowSnackbar('Erro ao buscar horários disponíveis: '+ err, 'error');
             setError('Erro ao carregar horários disponíveis');
         } finally {
             setLoading(false);
@@ -306,7 +306,7 @@ export default function GerenciarReservas() {
                 navigate('/reservas');
             })
             .catch((error) => {
-                console.error('Erro ao processar a requisição:', error);
+                handleShowSnackbar('Erro ao processar a requisição:', error);
                 const errorMsg = error.response?.data?.message || 'Ocorreu um erro ao salvar os dados.';
                 handleShowSnackbar(errorMsg, 'error');
             })

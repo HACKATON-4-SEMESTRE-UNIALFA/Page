@@ -96,7 +96,6 @@ export default function Dashboard() {
 
             setLoading(false);
         } catch (error) {
-            console.error("Erro ao buscar dados:", error);
             setLoading(false);
             navigate("/");
         }

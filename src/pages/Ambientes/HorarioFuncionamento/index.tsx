@@ -154,7 +154,7 @@ export default function GerenciarHorarios() {
                     setValue("id_ambiente", res.data.ambiente.id.toString());
                 })
                 .catch((err) => {
-                    console.log(err);
+                    (err);
                     handleShowSnackbar("Erro ao buscar Ambiente", "error")
                     setTimeout(() => {
                         setLoading(false);
@@ -258,7 +258,7 @@ export default function GerenciarHorarios() {
             setTimeout(() => { navigate('/ambientes'); }, 1500);
 
         } catch (error: any) {
-            console.log(error);
+            (error);
             const errorMessage = error.response?.data?.message || 'Erro ao processar a requisição';
             setLoading(false);
             handleShowSnackbar(errorMessage, 'error');

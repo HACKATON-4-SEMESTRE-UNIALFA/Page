@@ -60,11 +60,22 @@ export const LayoutDashboard = ({ children, refresh }: IProps) => {
         setNotificationCount(response.data.notificacao);
       })
       .catch((error) => {
-        console.error('fetchNotificationCount error:', error);
       });
   }, [token.accessToken, token.usuario.id]);
 
+  const updateConfirmation = useCallback(async () => {
+    try {
+      await axios.put(import.meta.env.VITE_URL + '/reserva/confirmada', null, {
+        headers: { Authorization: `Bearer ${token.accessToken}` },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }, [token.accessToken]);
+
+
   useEffect(() => {
+    updateConfirmation();
     fetchNotificationCount();
   }, [fetchNotificationCount, refresh]);
 

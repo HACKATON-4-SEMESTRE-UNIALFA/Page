@@ -179,7 +179,7 @@ export default function GerenciarAmbientes() {
                     'success'
                 );
                 setLoading(false);
-                console.log(response);
+                (response);
                 navigate('/horarios/' + response.data.ambiente.id, {
                     state: {
                         snackbarMessage: "Ambiente " + getValues("nome") + " salvo com sucesso !",
@@ -188,9 +188,9 @@ export default function GerenciarAmbientes() {
                 });
             })
             .catch((error) => {
-                console.log(error); // Mostra a resposta completa do servidor
+                (error); // Mostra a resposta completa do servidor
                 const errorMessage = error.response?.data.message || 'Erro ao processar a requisição';
-                console.log(error.response?.data.errors); // Exibe os erros específicos de validação
+                (error.response?.data.errors); // Exibe os erros específicos de validação
                 setLoading(false);
                 handleShowSnackbar(errorMessage, 'error');
             });

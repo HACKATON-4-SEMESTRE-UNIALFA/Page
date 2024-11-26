@@ -105,7 +105,7 @@ export default function Reservas() {
                     setUsuarios(usuarioMap)
                 })
                 .catch((err) => {
-                    console.error(err)
+                    (err)
                     handleShowSnackbar("Erro ao buscar Usuários", "error")
                 })
 
@@ -300,7 +300,7 @@ export default function Reservas() {
             handleOpen();
             setLoading(false);
         } catch (error) {
-            console.error(error);
+            (error);
             setLoading(false);
         }
     }, []);
@@ -317,7 +317,7 @@ export default function Reservas() {
             setRefreshKey(refreshKey + 1)
         } catch (error) {
             fecharModal();
-            console.error("Erro ao salvar o cancelamento:", error);
+            ("Erro ao salvar o cancelamento:", error);
             handleShowSnackbar("Ocorreu um erro ao cancelar a reserva", "error");
         }
     }, [idReservaSelecionada, handleShowSnackbar, fecharModal]);
