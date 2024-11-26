@@ -97,9 +97,7 @@ export const Rotas = () => {
                 <Route
                     path="/reservas/:id"
                     element={
-                        <PrivateRoute>
-                            <GerenciarReservas />
-                        </PrivateRoute>
+                        <GerenciarReservas />
                     }
                 />
                 <Route
