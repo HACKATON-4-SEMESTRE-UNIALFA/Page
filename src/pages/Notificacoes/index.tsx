@@ -76,18 +76,18 @@ export default function Notificacoes() {
                     setUsuarios(usuarioMap)
                 })
                 .catch((err) => {
-                    console.log(err)
+                    (err)
                     handleShowSnackbar("Erro ao buscar Usuários", "error")
                 })
 
             axios.get(import.meta.env.VITE_URL + '/reserva/notificacao', { headers: { Authorization: `Bearer ${token.accessToken}` } })
                 .then((res) => {
-                    console.log(res.data.notificacao)
+                    (res.data.notificacao)
                     setNotificacoes(res.data.notificacao)
                     setLoading(false)
                 })
                 .catch((err) => {
-                    console.log(err.data.notificacao)
+                    (err.data.notificacao)
                     setNotificacoes(err)
                     setLoading(false)
                 })
@@ -272,7 +272,7 @@ export default function Notificacoes() {
                 handleShowSnackbar("Erro ao marcar notifica es como lidas.", "error");
             }
         } catch (error) {
-            console.log(error);
+            (error);
         }
     }, [token.accessToken, token.usuario.id, handleShowSnackbar]);
 

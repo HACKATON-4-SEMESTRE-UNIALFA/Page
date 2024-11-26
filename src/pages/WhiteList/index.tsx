@@ -75,7 +75,7 @@ export default function WhiteList() {
             })
             .catch((err) => {
                 setLoading(false);
-                console.error(err);
+                (err);
                 handleShowSnackbar(
                     err.response?.data || "Erro ao carregar dados",
                     'error'

@@ -108,7 +108,7 @@ export default function GerenciarUsuarios() {
                     setValue("email", userData.email || '');
                     setValue("cpf", userData.cpf || '');
                     setValue("telefone", userData.telefone || '');
-                    console.log(userData);
+                    (userData);
                     setValue("isAdmin", userData.isAdmin || '');
                 })
                 .catch((error) => {
@@ -135,7 +135,7 @@ export default function GerenciarUsuarios() {
                 setTimeout(() => { navigate('/usuarios'); }, 1500);
             })
             .catch((error) => {
-                console.error(error);
+                (error);
                 handleShowSnackbar(error.response.data, 'error');
             })
             .finally(() => setLoading(false));

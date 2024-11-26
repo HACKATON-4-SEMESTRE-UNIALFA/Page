@@ -60,7 +60,7 @@ export const LayoutDashboard = ({ children, refresh }: IProps) => {
         setNotificationCount(response.data.notificacao);
       })
       .catch((error) => {
-        console.error('fetchNotificationCount error:', error);
+        ('fetchNotificationCount error:', error);
       });
   }, [token.accessToken, token.usuario.id]);
 
