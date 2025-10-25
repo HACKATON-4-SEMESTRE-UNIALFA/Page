@@ -317,7 +317,7 @@ export default function Reservas() {
             setRefreshKey(refreshKey + 1)
         } catch (error) {
             fecharModal();
-            ("Erro ao salvar o cancelamento:", error);
+            console.error("Erro ao salvar o cancelamento:", error);
             handleShowSnackbar("Ocorreu um erro ao cancelar a reserva", "error");
         }
     }, [idReservaSelecionada, handleShowSnackbar, fecharModal]);
