@@ -1,8 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { useCallback, useEffect, useState } from "react"
-import { verificaTokenExpirado } from "../../services/token"
-import { Loading } from "../../components/Loading"
 import axios from "axios"
+import { Loading } from "../../components/Loading"
 import {
     Container,
     Typography,
@@ -65,69 +64,98 @@ export default function Reservas() {
     const [modalAberto, setModalAberto] = useState(false);
     const [idReservaSelecionada, setIdReservaSelecionada] = useState<number | null>(null);
 
-
-
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
     })
 
-
     const token = JSON.parse(localStorage.getItem('auth.token') || '') as IToken
+
+    const verificaTokenExpirado = () => {
+        if (!token || !token.accessToken) return true;
+        try {
+            const payload = JSON.parse(atob(token.accessToken.split('.')[1]));
+            return payload.exp * 1000 < Date.now();
+        } catch {
+            return true;
+        }
+    };
 
     useEffect(() => {
         if (localStorage.length == 0 || verificaTokenExpirado()) {
             navigate("/")
+            return
         }
 
         setLoading(true)
 
         // Busca ambientes
-        axios.get(import.meta.env.VITE_URL + '/ambientes', { headers: { Authorization: `Bearer ${token.accessToken}` } })
-            .then((res) => {
-                const ambienteMap = new Map<number, string>()
-                res.data.ambiente.forEach((ambiente: IAmbiente) => {
-                    ambienteMap.set(ambiente.id, ambiente.nome)
-                })
-                setAmbientes(ambienteMap)
+        axios.get(import.meta.env.VITE_URL + '/ambientes', { 
+            headers: { Authorization: `Bearer ${token.accessToken}` } 
+        })
+        .then((res) => {
+            const ambienteMap = new Map<number, string>()
+            res.data.ambiente.forEach((ambiente: IAmbiente) => {
+                ambienteMap.set(ambiente.id, ambiente.nome)
             })
-            .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"))
+            setAmbientes(ambienteMap)
+        })
+        .catch(() => handleShowSnackbar("Erro ao buscar ambientes", "error"))
 
         // Busca reservas
         if (token.usuario.isAdmin) {
             // Busca Usuarios
-            axios.get(import.meta.env.VITE_URL + '/usuarios', { headers: { Authorization: `Bearer ${token.accessToken}` } })
-                .then((res) => {
-                    const usuarioMap = new Map<number, string>()
-                    res.data.usuario.forEach((usuario: IUsuario) => {
-                        usuarioMap.set(usuario.id, usuario.nome)
-                    })
-                    setUsuarios(usuarioMap)
+            axios.get(import.meta.env.VITE_URL + '/usuarios', { 
+                headers: { Authorization: `Bearer ${token.accessToken}` } 
+            })
+            .then((res) => {
+                const usuarioMap = new Map<number, string>()
+                res.data.usuario.forEach((usuario: IUsuario) => {
+                    usuarioMap.set(usuario.id, usuario.nome)
                 })
-                .catch((err) => {
-                    (err)
-                    handleShowSnackbar("Erro ao buscar Usuários", "error")
-                })
+                setUsuarios(usuarioMap)
+            })
+            .catch((err) => {
+                console.error(err)
+                handleShowSnackbar("Erro ao buscar Usuários", "error")
+            })
 
-            axios.get(import.meta.env.VITE_URL + '/reservas', { headers: { Authorization: `Bearer ${token.accessToken}` } })
-                .then((res) => {
-                    setDadosReservas(res.data.reserva)
-                    setLoading(false)
-                })
-                .catch((err) => {
-                    setDadosReservas(err)
-                    setLoading(false)
-                })
+            axios.get(import.meta.env.VITE_URL + '/reservas', { 
+                headers: { Authorization: `Bearer ${token.accessToken}` } 
+            })
+            .then((res) => {
+                setDadosReservas(res.data.reserva)
+                setLoading(false)
+            })
+            .catch((err) => {
+                console.error(err)
+                handleShowSnackbar("Erro ao buscar reservas", "error")
+                setDadosReservas([])
+                setLoading(false)
+            })
         } else {
-            axios.get(import.meta.env.VITE_URL + '/reservas/usuario/' + token.usuario.id, { headers: { Authorization: `Bearer ${token.accessToken}` } })
-                .then((res) => {
-                    setDadosReservas(res.data)
-                    setLoading(false)
-                })
-                .catch((err) => {
-                    setDadosReservas(err)
-                    setLoading(false)
-                })
+            // Para usuários não-admin
+            axios.get(
+                import.meta.env.VITE_URL + '/reservas/usuario/' + token.usuario.id, 
+                { headers: { Authorization: `Bearer ${token.accessToken}` } }
+            )
+            .then((res) => {
+                // Verifica se a resposta tem a estrutura correta
+                const reservas = Array.isArray(res.data) ? res.data : 
+                                 res.data.reservas ? res.data.reservas : 
+                                 res.data.reserva ? res.data.reserva :
+                                 res.data.historico ? res.data.historico : []
+                
+                console.log('Reservas do usuário:', reservas) // Debug
+                setDadosReservas(reservas)
+                setLoading(false)
+            })
+            .catch((err) => {
+                console.error('Erro ao buscar reservas:', err)
+                handleShowSnackbar("Erro ao buscar suas reservas", "error")
+                setDadosReservas([])
+                setLoading(false)
+            })
         }
     }, [refreshKey])
 
@@ -151,7 +179,7 @@ export default function Reservas() {
         setSnackbarVisible(true);
         setMessage(message);
         setSeverity(severity);
-    }, [setSnackbarVisible, setMessage, setSeverity]);
+    }, []);
 
     const columns: GridColDef[] = [
         {
@@ -291,36 +319,40 @@ export default function Reservas() {
         },
     ]
 
-
     const fetchHistorico = useCallback(async (idReserva: number) => {
         setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_URL}/reserva/${idReserva}/historico`, { headers: { Authorization: `Bearer ${token.accessToken}` } });
+            const response = await axios.get(`${import.meta.env.VITE_URL}/reserva/${idReserva}/historico`, { 
+                headers: { Authorization: `Bearer ${token.accessToken}` } 
+            });
             setHistorico(response.data.historico);
             handleOpen();
             setLoading(false);
         } catch (error) {
-            (error);
+            console.error(error);
+            handleShowSnackbar("Erro ao buscar histórico", "error");
             setLoading(false);
         }
-    }, []);
+    }, [token.accessToken, handleOpen, handleShowSnackbar]);
 
     const salvarCancelamento = useCallback(async (mensagem: string) => {
         if (!idReservaSelecionada) return;
 
         try {
-            await axios.put(`${import.meta.env.VITE_URL}/reservas/desativa/${idReservaSelecionada}/usuario/${token.usuario.id}`, {
-                mensagem
-            }, { headers: { Authorization: `Bearer ${token.accessToken}` } });
-            fecharModal(); // Fecha o modal após o sucesso
-            handleShowSnackbar("Reserva Cancelada realizado com sucesso!", "success");
+            await axios.put(
+                `${import.meta.env.VITE_URL}/reservas/desativa/${idReservaSelecionada}/usuario/${token.usuario.id}`, 
+                { mensagem }, 
+                { headers: { Authorization: `Bearer ${token.accessToken}` } }
+            );
+            fecharModal();
+            handleShowSnackbar("Reserva Cancelada com sucesso!", "success");
             setRefreshKey(refreshKey + 1)
         } catch (error) {
             fecharModal();
             console.error("Erro ao salvar o cancelamento:", error);
             handleShowSnackbar("Ocorreu um erro ao cancelar a reserva", "error");
         }
-    }, [idReservaSelecionada, handleShowSnackbar, fecharModal]);
+    }, [idReservaSelecionada, handleShowSnackbar, fecharModal, refreshKey, token]);
 
     return (
         <>
@@ -371,7 +403,7 @@ export default function Reservas() {
                             density="standard"
                             initialState={{
                                 sorting: {
-                                    sortModel: [{ field: 'data', sort: 'desc' }], // Ordenação inicial
+                                    sortModel: [{ field: 'data', sort: 'desc' }],
                                 },
                             } as GridInitialStateCommunity}
                             paginationModel={paginationModel}
